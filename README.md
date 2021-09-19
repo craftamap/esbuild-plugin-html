@@ -13,7 +13,7 @@ This plugin was developed against `esbuild` v0.12.26, using node 16 (<= 14 shoul
 ```bash
 yarn add -D @craftamap/esbuild-plugin-html
 # or
-npm install --save-dev html-webpack-plugin
+npm install --save-dev @craftamap/esbuild-plugin-html
 ```
 
 ## Usage
