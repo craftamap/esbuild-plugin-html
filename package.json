@@ -1,8 +1,11 @@
 {
-  "name": "esbuild-html-plugin",
+  "name": "@craftamap/esbuild-plugin-html",
   "version": "0.1.1",
   "main": "./lib/cjs/index.js",
-  "repository": "git@github.com:craftamap/esbuild-html-plugin.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/craftamap/esbuild-plugin-html"
+  },
   "author": "Fabian Siegel <fabians1999@gmail.com>",
   "license": "MIT",
   "files": [
