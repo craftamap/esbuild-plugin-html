@@ -1,0 +1,26 @@
+{
+  "name": "esbuild-html-plugin",
+  "version": "0.1.0",
+  "main": "./lib/cjs/index.js",
+  "repository": "git@github.com:craftamap/esbuild-html-plugin.git",
+  "author": "Fabian Siegel <fabians1999@gmail.com>",
+  "license": "MIT",
+  "files": [
+    "lib/"
+  ],
+  "peerDependencies": {
+    "esbuild": "^0.12.28"
+  },
+  "devDependencies": {
+    "@tsconfig/node12": "^1.0.9",
+    "@types/node": "^16.9.1",
+    "esbuild": "^0.12.28"
+  },
+  "engines": {
+    "node": ">13"
+  },
+  "dependencies": {
+    "@types/jsdom": "^16.2.13",
+    "jsdom": "^17.0.0"
+  }
+}
