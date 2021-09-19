@@ -10,12 +10,10 @@ This plugin was developed against `esbuild` v0.12.26, using node 16 (<= 14 shoul
 
 ## Installation
 
-`esbuild-html-plugin` is not published on npm, yet. However, you should also be able to install it via GitHub:
-
 ```bash
-yarn add -D git://github.com/craftamap/esbuild-html-plugin
+yarn add -D esbuild-html-plugin
 # or
-npm add --save-dev git://github.com/jantimon/html-webpack-plugin
+npm install --save-dev html-webpack-plugin
 ```
 
 ## Usage
