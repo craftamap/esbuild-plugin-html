@@ -78,3 +78,10 @@ interface HtmlFileConfiguration {
     htmlTemplate?: string, // custom html document template string
 }
 ```
+
+## Kudos: Other `*.html`-Plugins
+
+There exist some other `*.html`-plugins for esbuild. Those work differently than `@craftamap/esbuild-plugin-html`, and might be a better fit for you:
+
+- [@esbuilder/html](https://www.npmjs.com/package/@esbuilder/html) - loader-based approach (use `*.html`-file as entry point, and start subprocesses with `esbuild`)
+- [@chialab/esbuild-plugin-html](https://www.npmjs.com/package/@chialab/esbuild-plugin-html) - loader-based approach
