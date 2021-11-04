@@ -122,12 +122,12 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                     }
 
                     for (const [filepath, _] of relevantOutputs) {
-                        // Currently, we assume all htmlFiles are put directly into outdir
-                        // FIXME: Don't assume this
-                        const relativePath = path.relative(outdir, filepath)
+                        const out = path.join(outdir, htmlFileConfiguration.filename)
+                        const relativePath = path.relative(path.dirname(out), filepath)
                         if (path.parse(filepath).ext === ".js") {
                             const scriptTag = document.createElement("script")
                             scriptTag.setAttribute("src", relativePath)
+
                             // TODO: allow the user to configure if sources are defered
                             scriptTag.setAttribute("defer", "")
                             document.body.append(scriptTag)
