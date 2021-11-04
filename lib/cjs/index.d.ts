@@ -7,6 +7,7 @@ interface HtmlFileConfiguration {
     entryPoints: string[];
     title?: string;
     htmlTemplate?: string;
+    scriptLoading?: 'blocking' | 'defer' | 'module';
 }
 export declare const htmlPlugin: (configuration?: Configuration) => esbuild.Plugin;
 export {};

@@ -12,6 +12,7 @@ interface HtmlFileConfiguration {
     entryPoints: string[],
     title?: string,
     htmlTemplate?: string,
+    scriptLoading?: 'blocking' | 'defer' | 'module',
 }
 
 const defaultHtmlTemplate = `
@@ -128,8 +129,14 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                             const scriptTag = document.createElement("script")
                             scriptTag.setAttribute("src", relativePath)
 
-                            // TODO: allow the user to configure if sources are defered
-                            scriptTag.setAttribute("defer", "")
+                            if (htmlFileConfiguration.scriptLoading === "module") {
+                                // If module, add type="module"
+                                scriptTag.setAttribute("type", "module")
+                            } else if (!htmlFileConfiguration.scriptLoading || htmlFileConfiguration.scriptLoading === "defer") {
+                                // if scriptLoading is unset, or defer, use defer
+                                scriptTag.setAttribute("defer", "")
+                            }
+
                             document.body.append(scriptTag)
                         } else {
                             const linkTag = document.createElement("link")
@@ -138,6 +145,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                             document.head.appendChild(linkTag)
                         }
                     }
+
                     const out = path.join(outdir, htmlFileConfiguration.filename)
                     await fs.writeFile(out, dom.serialize())
                     const stat = await fs.stat(out)

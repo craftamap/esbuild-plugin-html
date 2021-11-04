@@ -76,6 +76,7 @@ interface HtmlFileConfiguration {
     entryPoints: string[], // Entry points to inject into the html, e.g. ['src/index.jsx']
     title?: string, // title to inject into the head, will not be set if not specified
     htmlTemplate?: string, // custom html document template string, a default template will be used if not specified
+    scriptLoading?: 'blocking' | 'defer' | 'module', // Decide if the script tag will be inserted as blocking script tag, `defer=""` (default) or with `type="module"`
 }
 ```
 
