@@ -27,7 +27,7 @@ Your configuration file might looks like this:
 
 ```javascript
 const esbuild = require('esbuild');
-const { htmlPlugin } = require('../@craftamap/esbuild-plugin-html');
+const { htmlPlugin } = require('@craftamap/esbuild-plugin-html');
 
 const options = {
     entryPoints: ['src/index.jsx'],
@@ -75,7 +75,7 @@ interface HtmlFileConfiguration {
     filename: string, // Output filename, e.g. index.html
     entryPoints: string[], // Entry points to inject into the html, e.g. ['src/index.jsx']
     title?: string, // title to inject into the head, will not be set if not specified
-    htmlTemplate?: string, // custom html document template string
+    htmlTemplate?: string, // custom html document template string, a default template will be used if not specified
 }
 ```
 
