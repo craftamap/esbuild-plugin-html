@@ -12,7 +12,7 @@
     "lib/"
   ],
   "peerDependencies": {
-    "esbuild": "^0.12.28"
+    "esbuild": ">=0.12.28"
   },
   "devDependencies": {
     "@tsconfig/node12": "^1.0.9",
