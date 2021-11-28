@@ -1,14 +1,25 @@
 # @craftamap/esbuild-plugin-html
-
 [![npm](https://img.shields.io/npm/v/@craftamap/esbuild-plugin-html?color=green&style=flat-square)](https://www.npmjs.com/package/@craftamap/esbuild-plugin-html)
 
-`@craftamap/esbuild-plugin-html` is a plugin to generate HTML files with [esbuild](https://esbuild.github.io/).
-All specified entry points, and their related files (such as `.css`-files) are automatically injected into the HTML file.
-`@craftamap/esbuild-plugin-html` is inspired by [jantimon/html-webpack-plugin](https://github.com/jantimon/html-webpack-plugin).
+![Simple banner containing the name of the project in a html self-closing tag](.github/banner.png)
+
+`@craftamap/esbuild-plugin-html` is a plugin to generate HTML files with
+[esbuild](https://esbuild.github.io/).  All specified entry points, and their
+related files (such as `.css`-files) are automatically injected into the HTML
+file.  `@craftamap/esbuild-plugin-html` is inspired by
+[jantimon/html-webpack-plugin](https://github.com/jantimon/html-webpack-plugin).
+
+Is any feature missing? 
+[Please create a ticket.](https://github.com/craftamap/esbuild-plugin-html/issues/new)
 
 ## Requirements
 
-This plugin was developed against `esbuild` v0.12.26, using node 16 (<= 14 should work, though).
+This plugin requires at least `esbuild` v0.12.26. Development was done on
+node.js 16, node.js 14 should also work though.
+
+There is currently no deno version of this plugin - however, if there is need
+for it, I will add one - 
+[just open a issue.](https://github.com/craftamap/esbuild-plugin-html/issues/new)
 
 ## Installation
 
@@ -20,12 +31,28 @@ npm install --save-dev @craftamap/esbuild-plugin-html
 
 ## Usage
 
-`@craftamap/esbuild-plugin-html` requires to have some options set in your esbuild script:
+This plugin works by analyzing the
+[`metafile`](https://esbuild.github.io/api/#metafile) esbuild provides. This
+metafile contains information about all entryPoints and their output files.
+This way, this plugin can map input files to their output file (javascript as
+well as css).
 
-- `outdir` must be set.
+`craftamap/esbuild-plugin-html` uses the [jsdom](https://github.com/jsdom/jsdom)
+under the hood to create a model of your HTML from the provided template.
+In this model, all discovered resources are injected.
+
+`@craftamap/esbuild-plugin-html` requires to have some options set in your
+esbuild script:
+
+- `outdir` must be set. The html files are generated within the `outdir`.
 - `metafile` must be set to `true`.
 
-Your configuration file might looks like this:
+⚠️: you can set a specific output name for resources using esbuild's
+`entryNames` feature. While this plugin tries to support this as best as it
+can, it may or may not work reliable. If you encounter any issues with it, 
+[please create a ticket.](https://github.com/craftamap/esbuild-plugin-html/issues/new)
+
+### Sample Configuration
 
 ```javascript
 const esbuild = require('esbuild');
@@ -58,6 +85,14 @@ const options = {
             </html>
           `,
                 },
+                {
+                    entryPoints: [
+                        'src/auth/auth.jsx',
+                    ],
+                    filename: 'auth.html',
+                    title: 'Login',
+                    scriptLoading: 'module',
+                },
             ]
         })
     ]
@@ -66,25 +101,67 @@ const options = {
 esbuild.build(options).catch(() => process.exit(1))
 ```
 
-## Configuration
+### Configuration
 
-```
+```typescript
 interface Configuration {
     files: HtmlFileConfiguration[],
 }
 
 interface HtmlFileConfiguration {
-    filename: string, // Output filename, e.g. index.html
-    entryPoints: string[], // Entry points to inject into the html, e.g. ['src/index.jsx']
-    title?: string, // title to inject into the head, will not be set if not specified
-    htmlTemplate?: string, // custom html document template string, a default template will be used if not specified
-    scriptLoading?: 'blocking' | 'defer' | 'module', // Decide if the script tag will be inserted as blocking script tag, `defer=""` (default) or with `type="module"`
+    filename: string,           // Output filename, e.g. index.html. This path is relative to the out dir
+    entryPoints: string[],      // Entry points to inject into the created html file, e.g. ['src/index.jsx']. 
+                                // Multiple entryPoints are possible.
+    title?: string,             // title to inject into the head, will not be set if not specified
+    htmlTemplate?: string,      // custom html document template string. If you omit a template, 
+                                // a default template will be used (see below)
+    scriptLoading?: 'blocking' | 'defer' | 'module', 
+                                // Decide if the script tag will be inserted as blocking script tag, 
+                                // with `defer=""` (default) or with `type="module"`
 }
 ```
 
+You can also change the verbosity of the plugin by changing esbuild's verbosity.
+
+#### Default HTML template
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+  </head>
+  <body>
+  </body>
+</html>
+```
+
+## Contributing
+
+Contributions are always welcome. 
+
+Currently `tsc` is used to build the project.
+
+If you file a commit, please use the following commit pattern:
+
+```
+topic: description (#issueId)
+```
+
+For example:
+
+```
+README: Add banner to README.md (#2)
+```
+
+
 ## Kudos: Other `*.html`-Plugins
 
-There exist some other `*.html`-plugins for esbuild. Those work differently than `@craftamap/esbuild-plugin-html`, and might be a better fit for you:
+There exist some other `*.html`-plugins for esbuild. Those work differently
+than `@craftamap/esbuild-plugin-html`, and might be a better fit for you:
 
-- [@esbuilder/html](https://www.npmjs.com/package/@esbuilder/html) - loader-based approach (use `*.html`-file as entry point, and start subprocesses with `esbuild`)
-- [@chialab/esbuild-plugin-html](https://www.npmjs.com/package/@chialab/esbuild-plugin-html) - loader-based approach
+- [@esbuilder/html](https://www.npmjs.com/package/@esbuilder/html) -
+  loader-based approach (use `*.html`-file as entry point, and start
+  subprocesses with `esbuild`)
+- [@chialab/esbuild-plugin-html](https://www.npmjs.com/package/@chialab/esbuild-plugin-html)
+  - loader-based approach
