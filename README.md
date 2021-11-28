@@ -1,6 +1,6 @@
-# @craftamap/esbuild-plugin-html
+# @craftamap/esbuild-plugin-html [![npm](https://img.shields.io/npm/v/@craftamap/esbuild-plugin-html?color=green&style=flat-square)](https://www.npmjs.com/package/@craftamap/esbuild-plugin-html)
 
-[![npm](https://img.shields.io/npm/v/@craftamap/esbuild-plugin-html?color=green&style=flat-square)](https://www.npmjs.com/package/@craftamap/esbuild-plugin-html)
+![Simple banner containing the name of the project in a html self-closing tag](.github/banner.png)
 
 `@craftamap/esbuild-plugin-html` is a plugin to generate HTML files with [esbuild](https://esbuild.github.io/).
 All specified entry points, and their related files (such as `.css`-files) are automatically injected into the HTML file.
