@@ -125,7 +125,8 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                     for (const [filepath, _] of relevantOutputs) {
                         const out = path.join(outdir, htmlFileConfiguration.filename)
                         const relativePath = path.relative(path.dirname(out), filepath)
-                        if (path.parse(filepath).ext === ".js") {
+                        const ext = path.parse(filepath).ext
+                        if (ext === ".js") {
                             const scriptTag = document.createElement("script")
                             scriptTag.setAttribute("src", relativePath)
 
@@ -138,11 +139,13 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                             }
 
                             document.body.append(scriptTag)
-                        } else {
+                        } else if (ext === ".css") {
                             const linkTag = document.createElement("link")
                             linkTag.setAttribute("rel", "stylesheet")
                             linkTag.setAttribute("href", relativePath)
                             document.head.appendChild(linkTag)
+                        } else {
+                            logInfo && console.log(`Warning: found file ${relativePath}, but it was neither .js nor .css`)
                         }
                     }
 
