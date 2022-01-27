@@ -104,20 +104,23 @@ esbuild.build(options).catch(() => process.exit(1))
 ### Configuration
 
 ```typescript
+type HtmlFileConfigurationDefine = Record<string, string>
+
 interface Configuration {
     files: HtmlFileConfiguration[],
 }
 
 interface HtmlFileConfiguration {
-    filename: string,           // Output filename, e.g. index.html. This path is relative to the out dir
-    entryPoints: string[],      // Entry points to inject into the created html file, e.g. ['src/index.jsx']. 
-                                // Multiple entryPoints are possible.
-    title?: string,             // title to inject into the head, will not be set if not specified
-    htmlTemplate?: string,      // custom html document template string. If you omit a template, 
-                                // a default template will be used (see below)
+    filename: string,                     // Output filename, e.g. index.html. This path is relative to the out dir
+    define: HtmlFileConfigurationDefine,  // provide a way to replace global identifiers with constant expressions
+    entryPoints: string[],                // Entry points to inject into the created html file, e.g. ['src/index.jsx']. 
+                                          // Multiple entryPoints are possible.
+    title?: string,                       // title to inject into the head, will not be set if not specified
+    htmlTemplate?: string,                // custom html document template string. If you omit a template, 
+                                          // a default template will be used (see below)
     scriptLoading?: 'blocking' | 'defer' | 'module', 
-                                // Decide if the script tag will be inserted as blocking script tag, 
-                                // with `defer=""` (default) or with `type="module"`
+                                          // Decide if the script tag will be inserted as blocking script tag, 
+                                          // with `defer=""` (default) or with `type="module"`
 }
 ```
 
