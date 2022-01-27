@@ -65,7 +65,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                 }
                 logInfo && console.log()
 
-                const outdir = build.initialOptions.outdir!;    
+                const outdir = build.initialOptions.outdir!;
 
                 for (const htmlFileConfiguration of configuration.files) {
                     // First, search for outputs with the configured entryPoints
