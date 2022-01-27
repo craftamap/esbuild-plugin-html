@@ -6,7 +6,7 @@ interface HtmlFileConfiguration {
     filename: string;
     entryPoints: string[];
     title?: string;
-    htmlTemplate?: any;
+    htmlTemplate?: string;
     define?: HtmlFileConfigurationDefine;
     scriptLoading?: 'blocking' | 'defer' | 'module';
 }
