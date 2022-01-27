@@ -6,8 +6,10 @@ interface HtmlFileConfiguration {
     filename: string;
     entryPoints: string[];
     title?: string;
-    htmlTemplate?: string;
+    htmlTemplate?: any;
+    define?: HtmlFileConfigurationDefine;
     scriptLoading?: 'blocking' | 'defer' | 'module';
 }
+declare type HtmlFileConfigurationDefine = Record<string, string>;
 export declare const htmlPlugin: (configuration?: Configuration) => esbuild.Plugin;
 export {};

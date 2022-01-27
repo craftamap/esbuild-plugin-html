@@ -11,9 +11,12 @@ interface HtmlFileConfiguration {
     filename: string,
     entryPoints: string[],
     title?: string,
-    htmlTemplate?: string,
+    htmlTemplate?: any,
+    define?: HtmlFileConfigurationDefine,
     scriptLoading?: 'blocking' | 'defer' | 'module',
 }
+
+type HtmlFileConfigurationDefine = Record<string, string>
 
 const defaultHtmlTemplate = `
 <!DOCTYPE html>
@@ -36,6 +39,12 @@ function escapeRegExp(text: string): string {
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 }
 
+function strReplaceDefinitions(str: string, definitions: HtmlFileConfigurationDefine): string {
+    return Object.keys(definitions).reduce((previousVal, currentVal) => {
+        return previousVal.replace(RegExp(escapeRegExp(`${currentVal}`), 'g'), definitions[currentVal]);
+    }, str);
+}
+
 export const htmlPlugin = (configuration: Configuration = { files: [], }): esbuild.Plugin => {
     return {
         name: 'esbuild-html-plugin',
@@ -56,7 +65,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                 }
                 logInfo && console.log()
 
-                const outdir = build.initialOptions.outdir!;
+                const outdir = build.initialOptions.outdir!;    
 
                 for (const htmlFileConfiguration of configuration.files) {
                     // First, search for outputs with the configured entryPoints
@@ -150,7 +159,9 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                     }
 
                     const out = path.join(outdir, htmlFileConfiguration.filename)
-                    await fs.writeFile(out, dom.serialize())
+                    const domSerialized = dom.serialize()
+                    const fileStr = htmlFileConfiguration.define ? strReplaceDefinitions(domSerialized, htmlFileConfiguration.define) : domSerialized
+                    await fs.writeFile(out, fileStr)
                     const stat = await fs.stat(out)
                     logInfo && console.log(`  ${out} - ${stat.size}`)
                 }
