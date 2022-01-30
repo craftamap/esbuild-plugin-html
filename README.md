@@ -38,8 +38,10 @@ This way, this plugin can map input files to their output file (javascript as
 well as css).
 
 `craftamap/esbuild-plugin-html` uses the [jsdom](https://github.com/jsdom/jsdom)
-under the hood to create a model of your HTML from the provided template.
-In this model, all discovered resources are injected.
+under the hood to create a model of your HTML from the provided template. In
+this model, all discovered resources are injected. The plugin also uses [lodash
+templates](https://lodash.com/docs/4.17.15#template) to insert custom data user
+data into the template.
 
 `@craftamap/esbuild-plugin-html` requires to have some options set in your
 esbuild script:
@@ -93,6 +95,31 @@ const options = {
                     title: 'Login',
                     scriptLoading: 'module',
                 },
+                {
+                    entryPoints: [
+                        'src/installation/installation.jsx',
+                    ],
+                    filename: 'installation.html',
+                    title: 'title',
+                    scriptLoading: 'module',
+                    define: {
+                        "version": "0.3.0",
+                    },
+                    htmlTemplate: `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body>
+                You are using version <%- define.version %>
+                <div id="root">
+                </div>
+            </body>
+            </html>
+          `,
+                },
             ]
         })
     ]
@@ -115,6 +142,8 @@ interface HtmlFileConfiguration {
     title?: string,             // title to inject into the head, will not be set if not specified
     htmlTemplate?: string,      // custom html document template string. If you omit a template, 
                                 // a default template will be used (see below)
+    define?: Record<string, string>,
+                                // Define custom values that can be accessed in the lodash template context
     scriptLoading?: 'blocking' | 'defer' | 'module', 
                                 // Decide if the script tag will be inserted as blocking script tag, 
                                 // with `defer=""` (default) or with `type="module"`
