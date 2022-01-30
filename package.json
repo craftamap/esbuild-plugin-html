@@ -7,7 +7,8 @@
     "url": "https://github.com/craftamap/esbuild-plugin-html"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "lint": "eslint src/**"
   },
   "author": "Fabian Siegel <fabians1999@gmail.com>",
   "license": "MIT",
