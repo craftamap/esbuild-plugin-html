@@ -21,6 +21,7 @@
   "devDependencies": {
     "@tsconfig/node12": "^1.0.9",
     "@types/jsdom": "^16.2.13",
+    "@types/lodash.template": "^4.5.0",
     "@types/node": "^16.9.1",
     "@typescript-eslint/eslint-plugin": "^5.10.1",
     "@typescript-eslint/parser": "^5.10.1",
@@ -32,6 +33,7 @@
     "node": ">13"
   },
   "dependencies": {
-    "jsdom": "^17.0.0"
+    "jsdom": "^17.0.0",
+    "lodash.template": "^4.5.0"
   }
 }
