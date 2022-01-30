@@ -1,7 +1,7 @@
-import esbuild from "esbuild";
-import { promises as fs } from "fs";
-import path from "path";
-import { JSDOM } from "jsdom";
+import esbuild from 'esbuild'
+import { promises as fs } from 'fs'
+import path from 'path'
+import { JSDOM } from 'jsdom'
 
 interface Configuration {
     files: HtmlFileConfiguration[],
@@ -24,29 +24,32 @@ const defaultHtmlTemplate = `
   <body>
   </body>
 </html>
-`;
+`
 
 const REGEXES = {
-    DIR_REGEX: '(?<dir>\\S+\\\/?)',
+    DIR_REGEX: '(?<dir>\\S+\\/?)',
     HASH_REGEX: '(?<hash>[A-Z2-7]{8})',
     NAME_REGEX: '(?<name>[^\\s\\/]+)',
-};
+}
 
 function escapeRegExp(text: string): string {
-    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
 }
 
 
 export const htmlPlugin = (configuration: Configuration = { files: [], }): esbuild.Plugin => {
-    let logInfo = false;
+    let logInfo = false
 
     function collectEntrypoints(htmlFileConfiguration: HtmlFileConfiguration, metafile?: esbuild.Metafile) {
-        const entryPoints = Object.entries(metafile?.outputs || {}).filter(([_, value]) => {
-            return htmlFileConfiguration.entryPoints.includes(value.entryPoint!)
+        const entryPoints = Object.entries(metafile?.outputs || {}).filter(([, value]) => {
+            if (!value.entryPoint) {
+                return false
+            }
+            return htmlFileConfiguration.entryPoints.includes(value.entryPoint)
         }).map(outputData => {
             // Flatten the output, instead of returning an array, let's return an object that contains the path of the output file as path
             return { path: outputData[0], ...outputData[1] }
-        });
+        })
         return entryPoints
     }
 
@@ -61,64 +64,64 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
             // the same [name] and [dir].
             // This should always include the "main"-output, as well as all relatedOutputs
             const joinedPathOfMatch = path.join(pathOfMatchedOutput.dir, pathOfMatchedOutput.name)
-            let findVariablesRegexString = escapeRegExp(entryNames)
-                .replace("\\\[hash\\\]", REGEXES.HASH_REGEX)
-                .replace("\\\[name\\\]", REGEXES.NAME_REGEX)
-                .replace("\\\[dir\\\]", REGEXES.DIR_REGEX);
+            const findVariablesRegexString = escapeRegExp(entryNames)
+                .replace('\\[hash\\]', REGEXES.HASH_REGEX)
+                .replace('\\[name\\]', REGEXES.NAME_REGEX)
+                .replace('\\[dir\\]', REGEXES.DIR_REGEX)
             const findVariablesRegex = new RegExp(findVariablesRegexString)
-            const match = findVariablesRegex.exec(joinedPathOfMatch);
+            const match = findVariablesRegex.exec(joinedPathOfMatch)
 
-            const name = match?.groups?.['name'];
-            const dir = match?.groups?.['dir'];
+            const name = match?.groups?.['name']
+            const dir = match?.groups?.['dir']
 
-            return Object.entries(metafile?.outputs || {}).filter(([pathOfCurrentOutput, _]) => {
+            return Object.entries(metafile?.outputs || {}).filter(([pathOfCurrentOutput,]) => {
                 if (entryNames) {
                     // if a entryName is set, we need to parse the output filename, get the name and dir, 
                     // and find files that match the same criteria
-                    let findFilesWithSameVariablesRegexString = escapeRegExp(entryNames.replace("[name]", name!).replace("[dir]", dir!))
-                        .replace("\\\[hash\\\]", REGEXES.HASH_REGEX)
+                    const findFilesWithSameVariablesRegexString = escapeRegExp(entryNames.replace('[name]', name ?? '').replace('[dir]', dir ?? ''))
+                        .replace('\\[hash\\]', REGEXES.HASH_REGEX)
                     const findFilesWithSameVariablesRegex = new RegExp(findFilesWithSameVariablesRegexString)
                     return findFilesWithSameVariablesRegex.test(pathOfCurrentOutput)
                 }
             }).map(outputData => {
                 // Flatten the output, instead of returning an array, let's return an object that contains the path of the output file as path
                 return { path: outputData[0], ...outputData[1] }
-            });
+            })
         } else {
             // If entryNames is not set, the related files are always next to the "main" output, and have the same filename, but the extension differs
-            return Object.entries(metafile?.outputs || {}).filter(([key, _]) => {
+            return Object.entries(metafile?.outputs || {}).filter(([key, ]) => {
                 return path.parse(key).name === pathOfMatchedOutput.name && path.parse(key).dir === pathOfMatchedOutput.dir
             }).map(outputData => {
                 // Flatten the output, instead of returning an array, let's return an object that contains the path of the output file as path
                 return { path: outputData[0], ...outputData[1] }
-            });
+            })
         }
     }
 
     function injectFiles(dom: JSDOM, assets: { path: string }[], outDir: string, htmlFileConfiguration: HtmlFileConfiguration) {
-        const document = dom.window.document;
+        const document = dom.window.document
         for (const outputFile of assets) {
             const filepath = outputFile.path
             const out = path.join(outDir, htmlFileConfiguration.filename)
             const relativePath = path.relative(path.dirname(out), filepath)
             const ext = path.parse(filepath).ext
-            if (ext === ".js") {
-                const scriptTag = document.createElement("script")
-                scriptTag.setAttribute("src", relativePath)
+            if (ext === '.js') {
+                const scriptTag = document.createElement('script')
+                scriptTag.setAttribute('src', relativePath)
 
-                if (htmlFileConfiguration.scriptLoading === "module") {
+                if (htmlFileConfiguration.scriptLoading === 'module') {
                     // If module, add type="module"
-                    scriptTag.setAttribute("type", "module")
-                } else if (!htmlFileConfiguration.scriptLoading || htmlFileConfiguration.scriptLoading === "defer") {
+                    scriptTag.setAttribute('type', 'module')
+                } else if (!htmlFileConfiguration.scriptLoading || htmlFileConfiguration.scriptLoading === 'defer') {
                     // if scriptLoading is unset, or defer, use defer
-                    scriptTag.setAttribute("defer", "")
+                    scriptTag.setAttribute('defer', '')
                 }
 
                 document.body.append(scriptTag)
-            } else if (ext === ".css") {
-                const linkTag = document.createElement("link")
-                linkTag.setAttribute("rel", "stylesheet")
-                linkTag.setAttribute("href", relativePath)
+            } else if (ext === '.css') {
+                const linkTag = document.createElement('link')
+                linkTag.setAttribute('rel', 'stylesheet')
+                linkTag.setAttribute('href', relativePath)
                 document.head.appendChild(linkTag)
             } else {
                 logInfo && console.log(`Warning: found file ${relativePath}, but it was neither .js nor .css`)
@@ -132,16 +135,16 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
         setup(build) {
             build.onStart(() => {
                 if (!build.initialOptions.metafile) {
-                    throw new Error("metafile is not enabled");
+                    throw new Error('metafile is not enabled')
                 }
                 if (!build.initialOptions.outdir) {
-                    throw new Error("outdir must be set");
+                    throw new Error('outdir must be set')
                 }
             })
             build.onEnd(async result => {
                 const startTime = Date.now()
                 if (build.initialOptions.logLevel == 'debug' || build.initialOptions.logLevel == 'info') {
-                    logInfo = true;
+                    logInfo = true
                 }
                 logInfo && console.log()
 
@@ -151,7 +154,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                     const collectedEntrypoints = collectEntrypoints(htmlFileConfiguration, result.metafile)
 
                     // All output files relevant for this html file
-                    let collectedOutputFiles: (esbuild.Metafile['outputs'][string] & { path: string })[] = [];
+                    let collectedOutputFiles: (esbuild.Metafile['outputs'][string] & { path: string })[] = []
 
                     for (const entrypoint of collectedEntrypoints) {
                         if (!entrypoint) {
@@ -162,12 +165,14 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
                         collectedOutputFiles = [...collectedOutputFiles, ...relatedOutputFiles]
                     }
-                    const outdir = build.initialOptions.outdir!;
+                    // Note: we can safely disable this rule here, as we already asserted this in setup.onStart
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    const outdir = build.initialOptions.outdir!
 
                     // Next, we insert the found files into the htmlTemplate - if no htmlTemplate was specified, we default to a basic one.
                     // TODO: allow specification of path to htmlTemplate
-                    const dom = new JSDOM(htmlFileConfiguration.htmlTemplate || defaultHtmlTemplate);
-                    const document = dom.window.document;
+                    const dom = new JSDOM(htmlFileConfiguration.htmlTemplate || defaultHtmlTemplate)
+                    const document = dom.window.document
 
                     if (htmlFileConfiguration.title) {
                         // If a title was given, we pass the title as well
