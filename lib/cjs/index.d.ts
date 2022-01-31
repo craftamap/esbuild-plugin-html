@@ -1,4 +1,4 @@
-import esbuild from "esbuild";
+import esbuild from 'esbuild';
 interface Configuration {
     files: HtmlFileConfiguration[];
 }

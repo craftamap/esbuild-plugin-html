@@ -1,0 +1,22 @@
+name: Build
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        run: yarn
+      - name: Run build
+        run: yarn build
+      - name: Detect unwanted changes
+        run: |
+          git diff --stat --exit-code
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        run: yarn
+      - name: Run lint
+        run: yarn lint
