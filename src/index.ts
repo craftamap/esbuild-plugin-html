@@ -2,6 +2,7 @@ import esbuild from 'esbuild'
 import { promises as fs } from 'fs'
 import path from 'path'
 import { JSDOM } from 'jsdom'
+import lodashTemplate from 'lodash.template'
 
 interface Configuration {
     files: HtmlFileConfiguration[],
@@ -12,6 +13,7 @@ interface HtmlFileConfiguration {
     entryPoints: string[],
     title?: string,
     htmlTemplate?: string,
+    define?: Record<string, string>,
     scriptLoading?: 'blocking' | 'defer' | 'module',
 }
 
@@ -98,6 +100,15 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
         }
     }
 
+    function renderTemplate(htmlFileConfiguration: HtmlFileConfiguration, htmlTemplate: string) {
+        const templateContext = {
+            define: htmlFileConfiguration.define,
+        }
+
+        const compiledTemplateFn = lodashTemplate(htmlTemplate)
+        return compiledTemplateFn(templateContext)
+    }
+
     function injectFiles(dom: JSDOM, assets: { path: string }[], outDir: string, htmlFileConfiguration: HtmlFileConfiguration) {
         const document = dom.window.document
         for (const outputFile of assets) {
@@ -128,7 +139,6 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
             }
         }
     }
-
 
     return {
         name: 'esbuild-html-plugin',
@@ -169,9 +179,12 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     const outdir = build.initialOptions.outdir!
 
+                    const htmlTemplate = htmlFileConfiguration.htmlTemplate || defaultHtmlTemplate
+
+                    const templatingResult = renderTemplate(htmlFileConfiguration, htmlTemplate)
+
                     // Next, we insert the found files into the htmlTemplate - if no htmlTemplate was specified, we default to a basic one.
-                    // TODO: allow specification of path to htmlTemplate
-                    const dom = new JSDOM(htmlFileConfiguration.htmlTemplate || defaultHtmlTemplate)
+                    const dom = new JSDOM(templatingResult)
                     const document = dom.window.document
 
                     if (htmlFileConfiguration.title) {
