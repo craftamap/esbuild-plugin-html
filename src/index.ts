@@ -16,6 +16,7 @@ export interface HtmlFileConfiguration {
     define?: Record<string, string>,
     scriptLoading?: 'blocking' | 'defer' | 'module',
     favicon?: string,
+    findRelatedOutputFiles?: boolean,
 }
 
 const defaultHtmlTemplate = `
@@ -41,6 +42,10 @@ function escapeRegExp(text: string): string {
 
 
 export const htmlPlugin = (configuration: Configuration = { files: [], }): esbuild.Plugin => {
+    configuration.files = configuration.files.map((htmlFileConfiguration: HtmlFileConfiguration) => {
+        return Object.assign({}, { 'findRelatedOutputFiles': true }, htmlFileConfiguration) // Set default values
+    })
+
     let logInfo = false
 
     function collectEntrypoints(htmlFileConfiguration: HtmlFileConfiguration, metafile?: esbuild.Metafile) {
@@ -193,8 +198,12 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                         if (!entrypoint) {
                             throw new Error(`Found no match for ${htmlFileConfiguration.entryPoints}`)
                         }
-
-                        const relatedOutputFiles = findRelatedOutputFiles(entrypoint, result.metafile, build.initialOptions.entryNames)
+                        let relatedOutputFiles
+                        if (htmlFileConfiguration.findRelatedOutputFiles) {
+                            relatedOutputFiles = findRelatedOutputFiles(entrypoint, result.metafile, build.initialOptions.entryNames)
+                        } else {
+                            relatedOutputFiles = [entrypoint]
+                        }
 
                         collectedOutputFiles = [...collectedOutputFiles, ...relatedOutputFiles]
                     }

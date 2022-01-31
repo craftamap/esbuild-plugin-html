@@ -10,5 +10,6 @@ export interface HtmlFileConfiguration {
     define?: Record<string, string>;
     scriptLoading?: 'blocking' | 'defer' | 'module';
     favicon?: string;
+    findRelatedOutputFiles?: boolean;
 }
 export declare const htmlPlugin: (configuration?: Configuration) => esbuild.Plugin;
