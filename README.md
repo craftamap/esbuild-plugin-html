@@ -40,7 +40,7 @@ well as css).
 `craftamap/esbuild-plugin-html` uses the [jsdom](https://github.com/jsdom/jsdom)
 under the hood to create a model of your HTML from the provided template. In
 this model, all discovered resources are injected. The plugin also uses [lodash
-templates](https://lodash.com/docs/4.17.15#template) to insert custom data user
+templates](https://lodash.com/docs/4.17.15#template) to insert custom user
 data into the template.
 
 `@craftamap/esbuild-plugin-html` requires to have some options set in your
