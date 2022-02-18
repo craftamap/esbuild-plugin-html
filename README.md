@@ -94,6 +94,7 @@ const options = {
                     filename: 'auth.html',
                     title: 'Login',
                     scriptLoading: 'module',
+                    favicon: './public/favicon.ico',
                 },
                 {
                     entryPoints: [
@@ -147,6 +148,7 @@ interface HtmlFileConfiguration {
     scriptLoading?: 'blocking' | 'defer' | 'module', 
                                 // Decide if the script tag will be inserted as blocking script tag, 
                                 // with `defer=""` (default) or with `type="module"`
+    favicon?: string,           // path to favicon.ico. If not specified, no favicon will be injected
 }
 ```
 

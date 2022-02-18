@@ -15,6 +15,7 @@ interface HtmlFileConfiguration {
     htmlTemplate?: string,
     define?: Record<string, string>,
     scriptLoading?: 'blocking' | 'defer' | 'module',
+    favicon?: string,
 }
 
 const defaultHtmlTemplate = `
@@ -91,7 +92,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
             })
         } else {
             // If entryNames is not set, the related files are always next to the "main" output, and have the same filename, but the extension differs
-            return Object.entries(metafile?.outputs || {}).filter(([key, ]) => {
+            return Object.entries(metafile?.outputs || {}).filter(([key,]) => {
                 return path.parse(key).name === pathOfMatchedOutput.name && path.parse(key).dir === pathOfMatchedOutput.dir
             }).map(outputData => {
                 // Flatten the output, instead of returning an array, let's return an object that contains the path of the output file as path
@@ -190,6 +191,16 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                     if (htmlFileConfiguration.title) {
                         // If a title was given, we pass the title as well
                         document.title = htmlFileConfiguration.title
+                    }
+
+                    if (htmlFileConfiguration.favicon) {
+                        // Injects a favicon if present
+                        fs.copyFile( htmlFileConfiguration.favicon, `${outdir}/favicon.ico` )
+
+                        const linkTag = document.createElement('link')
+                        linkTag.setAttribute('rel', 'icon')
+                        linkTag.setAttribute('href', '/favicon.ico')
+                        document.head.appendChild(linkTag)
                     }
 
                     injectFiles(dom, collectedOutputFiles, outdir, htmlFileConfiguration)

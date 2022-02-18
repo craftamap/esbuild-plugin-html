@@ -9,6 +9,7 @@ interface HtmlFileConfiguration {
     htmlTemplate?: string;
     define?: Record<string, string>;
     scriptLoading?: 'blocking' | 'defer' | 'module';
+    favicon?: string;
 }
 export declare const htmlPlugin: (configuration?: Configuration) => esbuild.Plugin;
 export {};
