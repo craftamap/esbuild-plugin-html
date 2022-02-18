@@ -195,7 +195,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
                     if (htmlFileConfiguration.favicon) {
                         // Injects a favicon if present
-                        fs.copyFile( htmlFileConfiguration.favicon, `${outdir}/favicon.ico` )
+                        await fs.copyFile( htmlFileConfiguration.favicon, `${outdir}/favicon.ico` )
 
                         const linkTag = document.createElement('link')
                         linkTag.setAttribute('rel', 'icon')
