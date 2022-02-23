@@ -110,16 +110,17 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
         return compiledTemplateFn(templateContext)
     }
 
-    function injectFiles(dom: JSDOM, assets: { path: string }[], outDir: string, htmlFileConfiguration: HtmlFileConfiguration) {
+    function injectFiles(dom: JSDOM, assets: { path: string }[], outDir: string, publicPath: string, htmlFileConfiguration: HtmlFileConfiguration) {
         const document = dom.window.document
         for (const outputFile of assets) {
             const filepath = outputFile.path
             const out = path.join(outDir, htmlFileConfiguration.filename)
             const relativePath = path.relative(path.dirname(out), filepath)
+            const absolutePath = publicPath + relativePath
             const ext = path.parse(filepath).ext
             if (ext === '.js') {
                 const scriptTag = document.createElement('script')
-                scriptTag.setAttribute('src', relativePath)
+                scriptTag.setAttribute('src', absolutePath)
 
                 if (htmlFileConfiguration.scriptLoading === 'module') {
                     // If module, add type="module"
@@ -133,10 +134,10 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
             } else if (ext === '.css') {
                 const linkTag = document.createElement('link')
                 linkTag.setAttribute('rel', 'stylesheet')
-                linkTag.setAttribute('href', relativePath)
+                linkTag.setAttribute('href', absolutePath)
                 document.head.appendChild(linkTag)
             } else {
-                logInfo && console.log(`Warning: found file ${relativePath}, but it was neither .js nor .css`)
+                logInfo && console.log(`Warning: found file ${absolutePath}, but it was neither .js nor .css`)
             }
         }
     }
@@ -180,6 +181,8 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     const outdir = build.initialOptions.outdir!
 
+                    const publicPath = build.initialOptions.publicPath ?? ""
+
                     const htmlTemplate = htmlFileConfiguration.htmlTemplate || defaultHtmlTemplate
 
                     const templatingResult = renderTemplate(htmlFileConfiguration, htmlTemplate)
@@ -203,7 +206,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                         document.head.appendChild(linkTag)
                     }
 
-                    injectFiles(dom, collectedOutputFiles, outdir, htmlFileConfiguration)
+                    injectFiles(dom, collectedOutputFiles, outdir, publicPath, htmlFileConfiguration)
 
                     const out = path.join(outdir, htmlFileConfiguration.filename)
                     await fs.writeFile(out, dom.serialize())
