@@ -3,6 +3,7 @@ import { promises as fs } from 'fs'
 import path from 'path'
 import { JSDOM } from 'jsdom'
 import lodashTemplate from 'lodash.template'
+import urlcat from 'urlcat'
 
 interface Configuration {
     files: HtmlFileConfiguration[],
@@ -110,16 +111,22 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
         return compiledTemplateFn(templateContext)
     }
 
-    function injectFiles(dom: JSDOM, assets: { path: string }[], outDir: string, htmlFileConfiguration: HtmlFileConfiguration) {
+    function injectFiles(dom: JSDOM, assets: { path: string }[], outDir: string, publicPath: string | undefined, htmlFileConfiguration: HtmlFileConfiguration) {
         const document = dom.window.document
         for (const outputFile of assets) {
             const filepath = outputFile.path
-            const out = path.join(outDir, htmlFileConfiguration.filename)
-            const relativePath = path.relative(path.dirname(out), filepath)
+
+            let targetPath: string
+            if (publicPath) {
+                targetPath = urlcat(publicPath, path.relative(outDir, filepath))
+            } else {
+                const htmlFileDirectory = path.join(outDir, htmlFileConfiguration.filename)
+                targetPath = path.relative(path.dirname(htmlFileDirectory), filepath)
+            }
             const ext = path.parse(filepath).ext
             if (ext === '.js') {
                 const scriptTag = document.createElement('script')
-                scriptTag.setAttribute('src', relativePath)
+                scriptTag.setAttribute('src', targetPath)
 
                 if (htmlFileConfiguration.scriptLoading === 'module') {
                     // If module, add type="module"
@@ -133,10 +140,10 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
             } else if (ext === '.css') {
                 const linkTag = document.createElement('link')
                 linkTag.setAttribute('rel', 'stylesheet')
-                linkTag.setAttribute('href', relativePath)
+                linkTag.setAttribute('href', targetPath)
                 document.head.appendChild(linkTag)
             } else {
-                logInfo && console.log(`Warning: found file ${relativePath}, but it was neither .js nor .css`)
+                logInfo && console.log(`Warning: found file ${targetPath}, but it was neither .js nor .css`)
             }
         }
     }
@@ -180,6 +187,8 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     const outdir = build.initialOptions.outdir!
 
+                    const publicPath = build.initialOptions.publicPath
+
                     const htmlTemplate = htmlFileConfiguration.htmlTemplate || defaultHtmlTemplate
 
                     const templatingResult = renderTemplate(htmlFileConfiguration, htmlTemplate)
@@ -195,7 +204,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
                     if (htmlFileConfiguration.favicon) {
                         // Injects a favicon if present
-                        await fs.copyFile( htmlFileConfiguration.favicon, `${outdir}/favicon.ico` )
+                        await fs.copyFile(htmlFileConfiguration.favicon, `${outdir}/favicon.ico`)
 
                         const linkTag = document.createElement('link')
                         linkTag.setAttribute('rel', 'icon')
@@ -203,7 +212,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                         document.head.appendChild(linkTag)
                     }
 
-                    injectFiles(dom, collectedOutputFiles, outdir, htmlFileConfiguration)
+                    injectFiles(dom, collectedOutputFiles, outdir, publicPath, htmlFileConfiguration)
 
                     const out = path.join(outdir, htmlFileConfiguration.filename)
                     await fs.writeFile(out, dom.serialize())

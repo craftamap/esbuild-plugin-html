@@ -152,6 +152,9 @@ interface HtmlFileConfiguration {
 }
 ```
 
+In case a `publicPath` is specified in the esbuild configuration,
+`esbuild-plugin-html` will use absolute paths with the provided `publicPath`.
+
 You can also change the verbosity of the plugin by changing esbuild's verbosity.
 
 #### Default HTML template
