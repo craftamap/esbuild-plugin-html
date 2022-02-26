@@ -118,7 +118,9 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
             let targetPath: string
             if (publicPath) {
-                targetPath = urlcat(publicPath, path.relative(outDir, filepath))
+                targetPath = publicPath === '/' 
+                    ? path.join(publicPath, path.relative(outDir, filepath)) 
+                    : urlcat(publicPath, path.relative(outDir, filepath))
             } else {
                 const htmlFileDirectory = path.join(outDir, htmlFileConfiguration.filename)
                 targetPath = path.relative(path.dirname(htmlFileDirectory), filepath)
