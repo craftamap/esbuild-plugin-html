@@ -215,6 +215,9 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                     injectFiles(dom, collectedOutputFiles, outdir, publicPath, htmlFileConfiguration)
 
                     const out = path.join(outdir, htmlFileConfiguration.filename)
+                    await fs.mkdir(path.dirname(out), {
+                        recursive: true,
+                    })
                     await fs.writeFile(out, dom.serialize())
                     const stat = await fs.stat(out)
                     logInfo && console.log(`  ${out} - ${stat.size}`)
