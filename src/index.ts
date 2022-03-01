@@ -3,7 +3,6 @@ import { promises as fs } from 'fs'
 import path from 'path'
 import { JSDOM } from 'jsdom'
 import lodashTemplate from 'lodash.template'
-import urlcat from 'urlcat'
 
 interface Configuration {
     files: HtmlFileConfiguration[],
@@ -111,6 +110,22 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
         return compiledTemplateFn(templateContext)
     }
 
+    // use the same joinWithPublicPath function as esbuild:
+    //  https://github.com/evanw/esbuild/blob/a1ff9d144cdb8d50ea2fa79a1d11f43d5bd5e2d8/internal/bundler/bundler.go#L533
+    function joinWithPublicPath(publicPath: string, relPath: string) {
+        relPath = path.normalize(relPath)
+        
+        if (!publicPath) {
+            publicPath = '.'
+        }
+
+        let slash = '/'
+        if (publicPath.endsWith('/')) {
+            slash = ''
+        }
+        return `${publicPath}${slash}${relPath}`
+    }
+
     function injectFiles(dom: JSDOM, assets: { path: string }[], outDir: string, publicPath: string | undefined, htmlFileConfiguration: HtmlFileConfiguration) {
         const document = dom.window.document
         for (const outputFile of assets) {
@@ -118,9 +133,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
             let targetPath: string
             if (publicPath) {
-                targetPath = publicPath === '/' 
-                    ? path.join(publicPath, path.relative(outDir, filepath)) 
-                    : urlcat(publicPath, path.relative(outDir, filepath))
+                targetPath = joinWithPublicPath(publicPath, path.relative(outDir, filepath))
             } else {
                 const htmlFileDirectory = path.join(outDir, htmlFileConfiguration.filename)
                 targetPath = path.relative(path.dirname(htmlFileDirectory), filepath)
