@@ -1,6 +1,6 @@
 {
   "name": "@craftamap/esbuild-plugin-html",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "main": "./lib/cjs/index.js",
   "repository": {
     "type": "git",
