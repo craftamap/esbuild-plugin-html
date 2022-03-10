@@ -4,11 +4,11 @@ import path from 'path'
 import { JSDOM } from 'jsdom'
 import lodashTemplate from 'lodash.template'
 
-interface Configuration {
+export interface Configuration {
     files: HtmlFileConfiguration[],
 }
 
-interface HtmlFileConfiguration {
+export interface HtmlFileConfiguration {
     filename: string,
     entryPoints: string[],
     title?: string,
