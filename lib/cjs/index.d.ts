@@ -1,8 +1,8 @@
 import esbuild from 'esbuild';
-interface Configuration {
+export interface Configuration {
     files: HtmlFileConfiguration[];
 }
-interface HtmlFileConfiguration {
+export interface HtmlFileConfiguration {
     filename: string;
     entryPoints: string[];
     title?: string;
@@ -12,4 +12,3 @@ interface HtmlFileConfiguration {
     favicon?: string;
 }
 export declare const htmlPlugin: (configuration?: Configuration) => esbuild.Plugin;
-export {};
