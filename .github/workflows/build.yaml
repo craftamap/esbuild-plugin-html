@@ -20,3 +20,14 @@ jobs:
         run: yarn
       - name: Run lint
         run: yarn lint
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        run: yarn
+      - name: Run test
+        run: yarn test
