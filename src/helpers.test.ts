@@ -1,5 +1,6 @@
-import { collectEntrypoints } from './helpers'
+import { collectEntrypoints, findRelatedOutputFiles } from './helpers'
 
+// === collectEntrypoints
 test('collecting a single entrypoint from a esbuild metafile', () => {
     const collectedEntrypoints = collectEntrypoints({
         filename: '',
@@ -54,4 +55,50 @@ test('collecting multiple entrypoints from a esbuild metafile, but one entrypoin
             }),
         ]
     )
+})
+
+// === findRelatedOutputFiles
+test('finding related output files, entryNames is not set, a single css file is related', () => {
+    const relatedOutputFiles = findRelatedOutputFiles({ path: 'dist/index.js' }, {
+        inputs: {}, outputs: {
+            'dist/index.js': { bytes: 0, inputs: {}, imports: [], exports: [], entryPoint: 'index.js' },
+            'dist/index.css': { bytes: 0, inputs: {}, imports: [], exports: [] },
+            'dist/anotherfile-index.css': { bytes: 0, inputs: {}, imports: [], exports: [] }, // This file should not be found
+        }
+    }, undefined)
+
+    expect(relatedOutputFiles).toEqual([
+        { path: 'dist/index.js', bytes: 0, inputs: {}, imports: [], exports: [], entryPoint: 'index.js' },
+        { path: 'dist/index.css', bytes: 0, inputs: {}, imports: [], exports: [] },
+    ])
+})
+
+test('finding related output files, entryNames is set, a single css file is related', () => {
+    const relatedOutputFiles = findRelatedOutputFiles({ path: 'dist/index-ABCDE234.js' }, {
+        inputs: {}, outputs: {
+            'dist/index-ABCDE234.js': { bytes: 0, inputs: {}, imports: [], exports: [], entryPoint: 'index.js' },
+            'dist/index-FGHIJ324.css': { bytes: 0, inputs: {}, imports: [], exports: [] },
+            'dist/anotherfile-KLMNO423.css': { bytes: 0, inputs: {}, imports: [], exports: [] }, // This file should not be found
+        }
+    }, '[dir]/[name]-[hash]')
+
+    expect(relatedOutputFiles).toEqual([
+        { path: 'dist/index-ABCDE234.js', bytes: 0, inputs: {}, imports: [], exports: [], entryPoint: 'index.js' },
+        { path: 'dist/index-FGHIJ324.css', bytes: 0, inputs: {}, imports: [], exports: [] },
+    ])
+})
+
+test('finding related output files, entryNames is set, complex path, a single css file is related', () => {
+    const relatedOutputFiles = findRelatedOutputFiles({ path: 'dist/foo/index-ABCDE234.js' }, {
+        inputs: {}, outputs: {
+            'dist/foo/index-ABCDE234.js': { bytes: 0, inputs: {}, imports: [], exports: [], entryPoint: 'index.js' },
+            'dist/foo/index-FGHIJ324.css': { bytes: 0, inputs: {}, imports: [], exports: [] },
+            'dist/anotherdir/index-KLMNO423.css': { bytes: 0, inputs: {}, imports: [], exports: [] }, // This file should not be found
+        }
+    }, '[dir]/[name]-[hash]')
+
+    expect(relatedOutputFiles).toEqual([
+        { path: 'dist/foo/index-ABCDE234.js', bytes: 0, inputs: {}, imports: [], exports: [], entryPoint: 'index.js' },
+        { path: 'dist/foo/index-FGHIJ324.css', bytes: 0, inputs: {}, imports: [], exports: [] },
+    ])
 })

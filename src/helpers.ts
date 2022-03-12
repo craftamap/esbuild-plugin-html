@@ -6,7 +6,11 @@ import { JSDOM } from 'jsdom'
 
 const REGEXES = {
     DIR_REGEX: '(?<dir>\\S+\\/?)',
-    HASH_REGEX: '(?<hash>[A-Z2-7]{8})',
+    HASH_REGEX: '(?<hash>[A-Z2-7]{8})', 
+    // esbuild uses a xxhash, but it's base32 encoded, and only the first 8 characters are used. The base32 alphabet is A-Z2-7
+    // See: 
+    //    https://github.com/evanw/esbuild/blob/bf341f7104b373d85061c31ebb00efc6f9a8bf5a/internal/bundler/bundler.go#L974
+    //    https://www.rfc-editor.org/rfc/rfc4648.html#section-6
     NAME_REGEX: '(?<name>[^\\s\\/]+)',
 }
 
