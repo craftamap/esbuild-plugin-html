@@ -149,6 +149,9 @@ interface HtmlFileConfiguration {
                                 // Decide if the script tag will be inserted as blocking script tag, 
                                 // with `defer=""` (default) or with `type="module"`
     favicon?: string,           // path to favicon.ico. If not specified, no favicon will be injected
+    findRelatedOutputFiles?: boolean,
+                                // Find related output (*.css)-files and inject them into the html. 
+                                // Defaults to true.
 }
 ```
 
