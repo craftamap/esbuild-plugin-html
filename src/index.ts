@@ -36,6 +36,15 @@ const REGEXES = {
     NAME_REGEX: '(?<name>[^\\s\\/]+)',
 }
 
+// This function joins a path, and in case of windows, it converts backward slashes ('\') forward slashes ('/').
+function posixJoin(...paths: string[]): string {
+    const joined = path.join(...paths)
+    if (path.sep === '/') {
+        return joined
+    }
+    return joined.split(path.sep).join(path.posix.sep)
+}
+
 function escapeRegExp(text: string): string {
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
 }
@@ -71,7 +80,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
             // We therefore try to extract the dir, name and hash from the "main"-output, and try to find all files with
             // the same [name] and [dir].
             // This should always include the "main"-output, as well as all relatedOutputs
-            const joinedPathOfMatch = path.join(pathOfMatchedOutput.dir, pathOfMatchedOutput.name)
+            const joinedPathOfMatch = posixJoin(pathOfMatchedOutput.dir, pathOfMatchedOutput.name)
             const findVariablesRegexString = escapeRegExp(entryNames)
                 .replace('\\[hash\\]', REGEXES.HASH_REGEX)
                 .replace('\\[name\\]', REGEXES.NAME_REGEX)
@@ -140,7 +149,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
             if (publicPath) {
                 targetPath = joinWithPublicPath(publicPath, path.relative(outDir, filepath))
             } else {
-                const htmlFileDirectory = path.join(outDir, htmlFileConfiguration.filename)
+                const htmlFileDirectory = posixJoin(outDir, htmlFileConfiguration.filename)
                 targetPath = path.relative(path.dirname(htmlFileDirectory), filepath)
             }
             const ext = path.parse(filepath).ext
@@ -238,7 +247,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
                     injectFiles(dom, collectedOutputFiles, outdir, publicPath, htmlFileConfiguration)
 
-                    const out = path.join(outdir, htmlFileConfiguration.filename)
+                    const out = posixJoin(outdir, htmlFileConfiguration.filename)
                     await fs.mkdir(path.dirname(out), {
                         recursive: true,
                     })
