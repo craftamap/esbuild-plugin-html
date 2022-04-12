@@ -1,4 +1,19 @@
-import { collectEntrypoints, findRelatedOutputFiles } from './helpers'
+import { collectEntrypoints, findRelatedOutputFiles, posixJoin } from './helpers'
+
+describe('posixJoin (ensure this works on windows, too)', () => {
+    it('joining >2 relative paths', () => {
+        const path = posixJoin('foo', 'bar', 'baz')
+        expect(path).toEqual('foo/bar/baz')
+    })
+    it('joining 2 relative paths', () => {
+        const path = posixJoin('foo/bar', 'baz')
+        expect(path).toEqual('foo/bar/baz')
+    })
+    it('joining 2 absolute paths', () => {
+        const path = posixJoin('/foo/bar', 'baz')
+        expect(path).toEqual('/foo/bar/baz')
+    })
+})
 
 // === collectEntrypoints
 test('collecting a single entrypoint from a esbuild metafile', () => {
