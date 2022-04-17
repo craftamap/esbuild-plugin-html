@@ -19,7 +19,7 @@ export interface HtmlFileConfiguration {
     findRelatedOutputFiles?: boolean,
     extraScripts?: (string | { 
         src: string; 
-        tags: (string | { key: string; value: string })[] 
+        tags?: (string | { key: string; value: string })[] 
     })[]
 }
 
@@ -255,7 +255,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                             scriptTag.setAttribute('src', script)
                         } else {
                             scriptTag.setAttribute('src', script.src)
-                            for (const tag of script.tags) {
+                            for (const tag of script?.tags || []) {
                                 if (typeof tag === 'string') {
                                     scriptTag.setAttribute(tag, '')
                                 } else {
