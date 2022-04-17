@@ -11,5 +11,12 @@ export interface HtmlFileConfiguration {
     scriptLoading?: 'blocking' | 'defer' | 'module';
     favicon?: string;
     findRelatedOutputFiles?: boolean;
+    extraScripts?: (string | {
+        src: string;
+        tags: (string | {
+            key: string;
+            value: string;
+        })[];
+    })[];
 }
 export declare const htmlPlugin: (configuration?: Configuration) => esbuild.Plugin;

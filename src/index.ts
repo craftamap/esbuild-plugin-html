@@ -17,6 +17,10 @@ export interface HtmlFileConfiguration {
     scriptLoading?: 'blocking' | 'defer' | 'module',
     favicon?: string,
     findRelatedOutputFiles?: boolean,
+    extraScripts?: (string | { 
+        src: string; 
+        tags: (string | { key: string; value: string })[] 
+    })[]
 }
 
 const defaultHtmlTemplate = `
@@ -245,6 +249,22 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                         document.head.appendChild(linkTag)
                     }
 
+                    for (const script of htmlFileConfiguration?.extraScripts || []) {
+                        const scriptTag = document.createElement('script')
+                        if (typeof script === 'string') {
+                            scriptTag.setAttribute('src', script)
+                        } else {
+                            scriptTag.setAttribute('src', script.src)
+                            for (const tag of script.tags) {
+                                if (typeof tag === 'string') {
+                                    scriptTag.setAttribute(tag, '')
+                                } else {
+                                    scriptTag.setAttribute(tag.key, tag.value)
+                                }
+                            }
+                        }
+                        document.body.append(scriptTag)
+                    }
                     injectFiles(dom, collectedOutputFiles, outdir, publicPath, htmlFileConfiguration)
 
                     const out = posixJoin(outdir, htmlFileConfiguration.filename)
