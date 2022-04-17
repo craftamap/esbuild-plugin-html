@@ -152,6 +152,10 @@ interface HtmlFileConfiguration {
     findRelatedOutputFiles?: boolean,
                                 // Find related output (*.css)-files and inject them into the html. 
                                 // Defaults to true.
+    extraScripts?: (string | {  // accepts an array of src strings or objects with src and attributes
+        src: string;            // src to use for the script
+        tags?: (string | { key: string; value: string })[] // array of tags to append to the script, if a string, the value defaults to ""
+    })[]
 }
 ```
 

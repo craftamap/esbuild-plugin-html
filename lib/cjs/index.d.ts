@@ -13,7 +13,7 @@ export interface HtmlFileConfiguration {
     findRelatedOutputFiles?: boolean;
     extraScripts?: (string | {
         src: string;
-        tags: (string | {
+        tags?: (string | {
             key: string;
             value: string;
         })[];
