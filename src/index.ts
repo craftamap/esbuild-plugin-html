@@ -19,7 +19,7 @@ export interface HtmlFileConfiguration {
     findRelatedOutputFiles?: boolean,
     extraScripts?: (string | { 
         src: string; 
-        tags?: (string | { key: string; value: string })[] 
+        attrs?: (string | { key: string; value: string })[] 
     })[]
 }
 
@@ -146,6 +146,22 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
     function injectFiles(dom: JSDOM, assets: { path: string }[], outDir: string, publicPath: string | undefined, htmlFileConfiguration: HtmlFileConfiguration) {
         const document = dom.window.document
+        for (const script of htmlFileConfiguration?.extraScripts || []) {
+            const scriptTag = document.createElement('script')
+            if (typeof script === 'string') {
+                scriptTag.setAttribute('src', script)
+            } else {
+                scriptTag.setAttribute('src', script.src)
+                for (const tag of script?.attrs || []) {
+                    if (typeof tag === 'string') {
+                        scriptTag.setAttribute(tag, '')
+                    } else {
+                        scriptTag.setAttribute(tag.key, tag.value)
+                    }
+                }
+            }
+            document.body.append(scriptTag)
+        }
         for (const outputFile of assets) {
             const filepath = outputFile.path
 
@@ -249,22 +265,6 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                         document.head.appendChild(linkTag)
                     }
 
-                    for (const script of htmlFileConfiguration?.extraScripts || []) {
-                        const scriptTag = document.createElement('script')
-                        if (typeof script === 'string') {
-                            scriptTag.setAttribute('src', script)
-                        } else {
-                            scriptTag.setAttribute('src', script.src)
-                            for (const tag of script?.tags || []) {
-                                if (typeof tag === 'string') {
-                                    scriptTag.setAttribute(tag, '')
-                                } else {
-                                    scriptTag.setAttribute(tag.key, tag.value)
-                                }
-                            }
-                        }
-                        document.body.append(scriptTag)
-                    }
                     injectFiles(dom, collectedOutputFiles, outdir, publicPath, htmlFileConfiguration)
 
                     const out = posixJoin(outdir, htmlFileConfiguration.filename)
