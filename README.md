@@ -154,7 +154,7 @@ interface HtmlFileConfiguration {
                                 // Defaults to true.
     extraScripts?: (string | {  // accepts an array of src strings or objects with src and attributes
         src: string;            // src to use for the script
-        tags?: (string | { key: string; value: string })[] // array of tags to append to the script, if a string, the value defaults to ""
+        attrs?: { [key: string]: string } // attributes to append to the script, e.g. { type: 'module', async: true }
     })[]
 }
 ```
