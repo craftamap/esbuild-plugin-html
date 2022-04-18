@@ -18,8 +18,8 @@ export interface HtmlFileConfiguration {
     favicon?: string,
     findRelatedOutputFiles?: boolean,
     extraScripts?: (string | { 
-        src: string; 
-        attrs?: (string | { key: string; value: string })[] 
+        src: string,
+        attrs?: { [key: string]: string }
     })[]
 }
 
@@ -152,13 +152,9 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                 scriptTag.setAttribute('src', script)
             } else {
                 scriptTag.setAttribute('src', script.src)
-                for (const tag of script?.attrs || []) {
-                    if (typeof tag === 'string') {
-                        scriptTag.setAttribute(tag, '')
-                    } else {
-                        scriptTag.setAttribute(tag.key, tag.value)
-                    }
-                }
+                Object.entries(script.attrs || {}).forEach(([key, value]) => {
+                    scriptTag.setAttribute(key, value)
+                })
             }
             document.body.append(scriptTag)
         }

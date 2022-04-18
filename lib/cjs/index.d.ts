@@ -13,10 +13,9 @@ export interface HtmlFileConfiguration {
     findRelatedOutputFiles?: boolean;
     extraScripts?: (string | {
         src: string;
-        attrs?: (string | {
-            key: string;
-            value: string;
-        })[];
+        attrs?: {
+            [key: string]: string;
+        };
     })[];
 }
 export declare const htmlPlugin: (configuration?: Configuration) => esbuild.Plugin;
