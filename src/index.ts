@@ -1,5 +1,5 @@
 import esbuild from 'esbuild'
-import fs, { promises } from 'fs'
+import fs from 'fs'
 import path from 'path'
 import { JSDOM } from 'jsdom'
 import lodashTemplate from 'lodash.template'
@@ -119,14 +119,18 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
         }
     }
 
-    function renderTemplate(htmlFileConfiguration: HtmlFileConfiguration, htmlTemplate: string) {
-        const templateContext = {
-            define: htmlFileConfiguration.define,
+    async function renderTemplate({ htmlTemplate, define }: HtmlFileConfiguration, log: boolean) {
+        const templateContext = { define }
+        const template = (htmlTemplate && fs.existsSync(htmlTemplate)
+            ? await fs.promises.readFile(htmlTemplate)
+            : htmlTemplate || '').toString()
+        const isValid = template.startsWith('<!DOCTYPE html>')
+    
+        if (log && htmlTemplate && !isValid) {
+            console.warn(`Warning: The htmlTemplate prop "${htmlTemplate}" does not reference a valid file`)
         }
-        const compiledTemplateFn = htmlTemplate.toString().endsWith('.html') 
-            ? lodashTemplate(fs.readFileSync(htmlTemplate).toString()) 
-            : lodashTemplate(htmlTemplate)
-        return compiledTemplateFn(templateContext)    
+        const compiledTemplateFn = lodashTemplate(isValid ? template : defaultHtmlTemplate)
+        return compiledTemplateFn(templateContext)
     }
 
     // use the same joinWithPublicPath function as esbuild:
@@ -239,9 +243,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
                     const publicPath = build.initialOptions.publicPath
 
-                    const htmlTemplate = htmlFileConfiguration.htmlTemplate || defaultHtmlTemplate
-
-                    const templatingResult = renderTemplate(htmlFileConfiguration, htmlTemplate)
+                    const templatingResult = await renderTemplate(htmlFileConfiguration, Boolean(build.initialOptions.logLevel))
 
                     // Next, we insert the found files into the htmlTemplate - if no htmlTemplate was specified, we default to a basic one.
                     const dom = new JSDOM(templatingResult)
@@ -254,7 +256,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
                     if (htmlFileConfiguration.favicon) {
                         // Injects a favicon if present
-                        await promises.copyFile(htmlFileConfiguration.favicon, `${outdir}/favicon.ico`)
+                        await fs.promises.copyFile(htmlFileConfiguration.favicon, `${outdir}/favicon.ico`)
 
                         const linkTag = document.createElement('link')
                         linkTag.setAttribute('rel', 'icon')
@@ -265,11 +267,11 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                     injectFiles(dom, collectedOutputFiles, outdir, publicPath, htmlFileConfiguration)
 
                     const out = posixJoin(outdir, htmlFileConfiguration.filename)
-                    await promises.mkdir(path.dirname(out), {
+                    await fs.promises.mkdir(path.dirname(out), {
                         recursive: true,
                     })
-                    await promises.writeFile(out, dom.serialize())
-                    const stat = await promises.stat(out)
+                    await fs.promises.writeFile(out, dom.serialize())
+                    const stat = await fs.promises.stat(out)
                     logInfo && console.log(`  ${out} - ${stat.size}`)
                 }
                 logInfo && console.log(`  HTML Plugin Done in ${Date.now() - startTime}ms`)
