@@ -1,5 +1,5 @@
 import esbuild from 'esbuild'
-import { promises as fs } from 'fs'
+import fs, { promises } from 'fs'
 import path from 'path'
 import { JSDOM } from 'jsdom'
 import lodashTemplate from 'lodash.template'
@@ -123,9 +123,10 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
         const templateContext = {
             define: htmlFileConfiguration.define,
         }
-
-        const compiledTemplateFn = lodashTemplate(htmlTemplate)
-        return compiledTemplateFn(templateContext)
+        const compiledTemplateFn = htmlTemplate.toString().endsWith('.html') 
+            ? lodashTemplate(fs.readFileSync(htmlTemplate).toString()) 
+            : lodashTemplate(htmlTemplate)
+        return compiledTemplateFn(templateContext)    
     }
 
     // use the same joinWithPublicPath function as esbuild:
@@ -253,7 +254,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
                     if (htmlFileConfiguration.favicon) {
                         // Injects a favicon if present
-                        await fs.copyFile(htmlFileConfiguration.favicon, `${outdir}/favicon.ico`)
+                        await promises.copyFile(htmlFileConfiguration.favicon, `${outdir}/favicon.ico`)
 
                         const linkTag = document.createElement('link')
                         linkTag.setAttribute('rel', 'icon')
@@ -264,11 +265,11 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                     injectFiles(dom, collectedOutputFiles, outdir, publicPath, htmlFileConfiguration)
 
                     const out = posixJoin(outdir, htmlFileConfiguration.filename)
-                    await fs.mkdir(path.dirname(out), {
+                    await promises.mkdir(path.dirname(out), {
                         recursive: true,
                     })
-                    await fs.writeFile(out, dom.serialize())
-                    const stat = await fs.stat(out)
+                    await promises.writeFile(out, dom.serialize())
+                    const stat = await promises.stat(out)
                     logInfo && console.log(`  ${out} - ${stat.size}`)
                 }
                 logInfo && console.log(`  HTML Plugin Done in ${Date.now() - startTime}ms`)
