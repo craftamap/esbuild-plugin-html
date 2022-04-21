@@ -119,18 +119,12 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
         }
     }
 
-    async function renderTemplate({ htmlTemplate, define }: HtmlFileConfiguration, log: boolean) {
-        const templateContext = { define }
+    async function renderTemplate({ htmlTemplate, define }: HtmlFileConfiguration) {
         const template = (htmlTemplate && fs.existsSync(htmlTemplate)
             ? await fs.promises.readFile(htmlTemplate)
             : htmlTemplate || '').toString()
-        const isValid = template.startsWith('<!DOCTYPE html>')
-    
-        if (log && htmlTemplate && !isValid) {
-            console.warn(`Warning: The htmlTemplate prop "${htmlTemplate}" does not reference a valid file`)
-        }
-        const compiledTemplateFn = lodashTemplate(isValid ? template : defaultHtmlTemplate)
-        return compiledTemplateFn(templateContext)
+        const compiledTemplateFn = lodashTemplate(template || defaultHtmlTemplate)
+        return compiledTemplateFn({ define })
     }
 
     // use the same joinWithPublicPath function as esbuild:
@@ -243,7 +237,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
                     const publicPath = build.initialOptions.publicPath
 
-                    const templatingResult = await renderTemplate(htmlFileConfiguration, Boolean(build.initialOptions.logLevel))
+                    const templatingResult = await renderTemplate(htmlFileConfiguration)
 
                     // Next, we insert the found files into the htmlTemplate - if no htmlTemplate was specified, we default to a basic one.
                     const dom = new JSDOM(templatingResult)
