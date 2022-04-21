@@ -143,6 +143,7 @@ interface HtmlFileConfiguration {
     title?: string,             // title to inject into the head, will not be set if not specified
     htmlTemplate?: string,      // custom html document template string. If you omit a template, 
                                 // a default template will be used (see below)
+                                // can also be a relative path to an html file
     define?: Record<string, string>,
                                 // Define custom values that can be accessed in the lodash template context
     scriptLoading?: 'blocking' | 'defer' | 'module', 
