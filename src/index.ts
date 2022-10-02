@@ -16,8 +16,9 @@ export interface HtmlFileConfiguration {
     define?: Record<string, string>,
     scriptLoading?: 'blocking' | 'defer' | 'module',
     favicon?: string,
+    findRelatedCssFiles?: boolean,
     findRelatedOutputFiles?: boolean,
-    extraScripts?: (string | { 
+    extraScripts?: (string | {
         src: string,
         attrs?: { [key: string]: string }
     })[]
@@ -56,7 +57,7 @@ function escapeRegExp(text: string): string {
 
 export const htmlPlugin = (configuration: Configuration = { files: [], }): esbuild.Plugin => {
     configuration.files = configuration.files.map((htmlFileConfiguration: HtmlFileConfiguration) => {
-        return Object.assign({}, { 'findRelatedOutputFiles': true }, htmlFileConfiguration) // Set default values
+        return Object.assign({}, { findRelatedOutputFiles: false, findRelatedCssFiles: true }, htmlFileConfiguration) // Set default values
     })
 
     let logInfo = false
@@ -74,7 +75,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
         return entryPoints
     }
 
-    function findRelatedOutputFiles(entrypoint: { path: string }, metafile?: esbuild.Metafile, entryNames?: string) {
+    function findNameRelatedOutputFiles(entrypoint: { path: string }, metafile?: esbuild.Metafile, entryNames?: string) {
         const pathOfMatchedOutput = path.parse(entrypoint.path)
 
         // Search for all files that are "related" to the output (.css and map files, for example files, as assets are dealt with otherwise).
@@ -131,7 +132,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
     //  https://github.com/evanw/esbuild/blob/a1ff9d144cdb8d50ea2fa79a1d11f43d5bd5e2d8/internal/bundler/bundler.go#L533
     function joinWithPublicPath(publicPath: string, relPath: string) {
         relPath = path.normalize(relPath)
-        
+
         if (!publicPath) {
             publicPath = '.'
         }
@@ -222,14 +223,20 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                         if (!entrypoint) {
                             throw new Error(`Found no match for ${htmlFileConfiguration.entryPoints}`)
                         }
-                        let relatedOutputFiles
+                        const relatedOutputFiles = new Map()
+                        relatedOutputFiles.set(entrypoint.path, entrypoint)
+                        if (htmlFileConfiguration.findRelatedCssFiles) {
+                            if (entrypoint?.cssBundle) {
+                                relatedOutputFiles.set(entrypoint.cssBundle, { path: entrypoint?.cssBundle })
+                            }
+                        }
                         if (htmlFileConfiguration.findRelatedOutputFiles) {
-                            relatedOutputFiles = findRelatedOutputFiles(entrypoint, result.metafile, build.initialOptions.entryNames)
-                        } else {
-                            relatedOutputFiles = [entrypoint]
+                            findNameRelatedOutputFiles(entrypoint, result.metafile, build.initialOptions.entryNames).forEach((item) => {
+                                relatedOutputFiles.set(item.path, item)
+                            })
                         }
 
-                        collectedOutputFiles = [...collectedOutputFiles, ...relatedOutputFiles]
+                        collectedOutputFiles = [...collectedOutputFiles, ...relatedOutputFiles.values()]
                     }
                     // Note: we can safely disable this rule here, as we already asserted this in setup.onStart
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

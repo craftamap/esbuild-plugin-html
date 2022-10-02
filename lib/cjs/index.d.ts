@@ -10,6 +10,7 @@ export interface HtmlFileConfiguration {
     define?: Record<string, string>;
     scriptLoading?: 'blocking' | 'defer' | 'module';
     favicon?: string;
+    findRelatedCssFiles?: boolean;
     findRelatedOutputFiles?: boolean;
     extraScripts?: (string | {
         src: string;
