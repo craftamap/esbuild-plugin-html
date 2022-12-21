@@ -254,7 +254,12 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
                         const linkTag = document.createElement('link')
                         linkTag.setAttribute('rel', 'icon')
-                        linkTag.setAttribute('href', '/favicon.ico')
+
+                        let faviconPublicPath = '/favicon.ico' 
+                        if (publicPath) {
+                            faviconPublicPath = joinWithPublicPath(publicPath, 'favicon.ico')
+                        }
+                        linkTag.setAttribute('href', faviconPublicPath)
                         document.head.appendChild(linkTag)
                     }
 
