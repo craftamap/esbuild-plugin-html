@@ -9,15 +9,32 @@ export interface Configuration {
 }
 
 export interface HtmlFileConfiguration {
+    /** @param filename The name of the output HTML file (relative to the output directory) */
     filename: string,
+    /** @param entryPoints The entry points to include in the HTML file. */
     entryPoints: string[],
+    /** @param title The title of the HTML file. */
     title?: string,
+    /** @param htmlTemplate A path to a custom HTML template to use. If not set, a default template will be used. */
     htmlTemplate?: string,
+    /** @param define A map of variables that will be available in the HTML file. */
     define?: Record<string, string>,
+    /** @param scriptLoading How to load the generated script tags: blocking, defer, or module. Defaults to defer. */
     scriptLoading?: 'blocking' | 'defer' | 'module',
+    /** @param favicon A path to a favicon to use. */
     favicon?: string,
+    /** @param findRelatedCssFiles Whether to find CSS files that are related to the entry points. */
     findRelatedCssFiles?: boolean,
+    /**
+     * @deprecated Use findRelatedCssFiles instead. 
+     * @param findRelatedOutputFiles Whether to find output files that are related to the entry points. */
     findRelatedOutputFiles?: boolean,
+    /** @param inline Whether to inline the content of the js and css files. */
+    inline?: boolean | {
+        css?: boolean
+        js?: boolean
+    }
+    /** @param extraScripts Extra script tags to include in the HTML file. */
     extraScripts?: (string | {
         src: string,
         attrs?: { [key: string]: string }
@@ -98,7 +115,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
             return Object.entries(metafile?.outputs || {}).filter(([pathOfCurrentOutput,]) => {
                 if (entryNames) {
-                    // if a entryName is set, we need to parse the output filename, get the name and dir, 
+                    // if a entryName is set, we need to parse the output filename, get the name and dir,
                     // and find files that match the same criteria
                     const findFilesWithSameVariablesRegexString = escapeRegExp(entryNames.replace('[name]', name ?? '').replace('[dir]', dir ?? ''))
                         .replace('\\[hash\\]', REGEXES.HASH_REGEX)
@@ -144,7 +161,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
         return `${publicPath}${slash}${relPath}`
     }
 
-    function injectFiles(dom: JSDOM, assets: { path: string }[], outDir: string, publicPath: string | undefined, htmlFileConfiguration: HtmlFileConfiguration) {
+    async function injectFiles(dom: JSDOM, assets: { path: string }[], outDir: string, publicPath: string | undefined, htmlFileConfiguration: HtmlFileConfiguration) {
         const document = dom.window.document
         for (const script of htmlFileConfiguration?.extraScripts || []) {
             const scriptTag = document.createElement('script')
@@ -169,10 +186,41 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                 targetPath = path.relative(path.dirname(htmlFileDirectory), filepath)
             }
             const ext = path.parse(filepath).ext
+
+            // Inline the JavaScript and CSS files if the option is set.
+            const { inline } = htmlFileConfiguration
+
+            const isInline = (inline_: HtmlFileConfiguration['inline'] | undefined, ext_: '.css' | '.js') => {
+                if (!inline_) {
+                    return false
+                }
+                const extension = ext_.replace('.', '') as 'css' | 'js'
+                return (
+                    (typeof inline_ === 'boolean' && inline_ === true) ||
+                    (typeof inline_ === 'object' && inline_[extension] === true)
+                )
+            }
+
             if (ext === '.js') {
                 const scriptTag = document.createElement('script')
-                scriptTag.setAttribute('src', targetPath)
+                // Check if the JavaScript should be inlined.
+                if (isInline(inline, ext)) {
+                    console.log('Inlining script', filepath)
+                    // Read the content of the JavaScript file, then append to the script tag
+                    const scriptContent = await fs.promises.readFile(
+                        filepath,
+                        'utf-8'
+                    )
+                    scriptTag.textContent = scriptContent
+                    document.body.append(scriptTag)
 
+                    // no need to set any attributes
+                    continue
+                }
+
+                // If not inlined, set the 'src' attribute as usual.
+                scriptTag.setAttribute('src', targetPath)
+                    
                 if (htmlFileConfiguration.scriptLoading === 'module') {
                     // If module, add type="module"
                     scriptTag.setAttribute('type', 'module')
@@ -183,6 +231,20 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
                 document.body.append(scriptTag)
             } else if (ext === '.css') {
+                // Check if the CSS should be inlined -> if so, use style tags instead of link tags.
+                if (isInline(inline, ext)) {
+                    const styleTag = document.createElement('style')
+                    const styleContent = await fs.promises.readFile(
+                        filepath,
+                        'utf-8'
+                    )
+                    styleTag.textContent = styleContent
+                    document.head.append(styleTag)
+
+                    // no need to set any attributes
+                    continue
+                } 
+
                 const linkTag = document.createElement('link')
                 linkTag.setAttribute('rel', 'stylesheet')
                 linkTag.setAttribute('href', targetPath)
@@ -262,7 +324,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                         const linkTag = document.createElement('link')
                         linkTag.setAttribute('rel', 'icon')
 
-                        let faviconPublicPath = '/favicon.ico' 
+                        let faviconPublicPath = '/favicon.ico'
                         if (publicPath) {
                             faviconPublicPath = joinWithPublicPath(publicPath, 'favicon.ico')
                         }
@@ -270,7 +332,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                         document.head.appendChild(linkTag)
                     }
 
-                    injectFiles(dom, collectedOutputFiles, outdir, publicPath, htmlFileConfiguration)
+                    await injectFiles(dom, collectedOutputFiles, outdir, publicPath, htmlFileConfiguration)
 
                     const out = posixJoin(outdir, htmlFileConfiguration.filename)
                     await fs.promises.mkdir(path.dirname(out), {
