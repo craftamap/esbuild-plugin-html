@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import esbuild from 'esbuild'
 import fs from 'fs'
 import path from 'path'
@@ -21,7 +22,8 @@ export interface HtmlFileConfiguration {
     extraScripts?: (string | {
         src: string,
         attrs?: { [key: string]: string }
-    })[]
+    })[],
+    hash: boolean
 }
 
 const defaultHtmlTemplate = `
@@ -167,6 +169,9 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
             } else {
                 const htmlFileDirectory = posixJoin(outDir, htmlFileConfiguration.filename)
                 targetPath = path.relative(path.dirname(htmlFileDirectory), filepath)
+            }
+            if (htmlFileConfiguration.hash) {
+                targetPath = `${targetPath}?${crypto.createHash('md5').update(JSON.stringify(outputFile)).digest("hex")}`;
             }
             const ext = path.parse(filepath).ext
             if (ext === '.js') {
