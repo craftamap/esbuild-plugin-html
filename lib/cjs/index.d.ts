@@ -35,5 +35,6 @@ export interface HtmlFileConfiguration {
             [key: string]: string;
         };
     })[];
+    hash: boolean;
 }
 export declare const htmlPlugin: (configuration?: Configuration) => esbuild.Plugin;

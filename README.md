@@ -95,6 +95,7 @@ const options = {
                     title: 'Login',
                     scriptLoading: 'module',
                     favicon: './public/favicon.ico',
+                    hash: true,
                 },
                 {
                     entryPoints: [
@@ -165,7 +166,8 @@ interface HtmlFileConfiguration {
     extraScripts?: (string | {  // accepts an array of src strings or objects with src and attributes
         src: string;            // src to use for the script
         attrs?: { [key: string]: string } // attributes to append to the script, e.g. { type: 'module', async: true }
-    })[]
+    })[],
+    hash: boolean               // If true, append a hash to all included scripts and CSS files for cache-busting.
 }
 ```
 
