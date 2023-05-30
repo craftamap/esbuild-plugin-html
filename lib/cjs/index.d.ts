@@ -4,7 +4,8 @@ export interface Configuration {
 }
 export interface HtmlFileConfiguration {
     filename: string;
-    entryPoints: string[];
+    entryPoints?: string[];
+    injectedOutputs?: string[];
     title?: string;
     htmlTemplate?: string;
     define?: Record<string, string>;

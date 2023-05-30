@@ -10,7 +10,8 @@ export interface Configuration {
 
 export interface HtmlFileConfiguration {
     filename: string,
-    entryPoints: string[],
+    entryPoints?: string[],
+    injectedOutputs?: string[],
     title?: string,
     htmlTemplate?: string,
     define?: Record<string, string>,
@@ -57,17 +58,25 @@ function escapeRegExp(text: string): string {
 
 export const htmlPlugin = (configuration: Configuration = { files: [], }): esbuild.Plugin => {
     configuration.files = configuration.files.map((htmlFileConfiguration: HtmlFileConfiguration) => {
+        if (!htmlFileConfiguration.entryPoints && !htmlFileConfiguration.injectedOutputs) {
+            throw new Error('Must supply at least one of `entryPoints` or `injectedOutputs`.')
+        }
         return Object.assign({}, { findRelatedOutputFiles: false, findRelatedCssFiles: true }, htmlFileConfiguration) // Set default values
     })
 
     let logInfo = false
 
     function collectEntrypoints(htmlFileConfiguration: HtmlFileConfiguration, metafile?: esbuild.Metafile) {
-        const entryPoints = Object.entries(metafile?.outputs || {}).filter(([, value]) => {
+        const entryPoints = Object.entries(metafile?.outputs || {}).filter(([key, value]) => {
             if (!value.entryPoint) {
                 return false
             }
-            return htmlFileConfiguration.entryPoints.includes(value.entryPoint)
+            if (htmlFileConfiguration.entryPoints && htmlFileConfiguration.entryPoints.includes(value.entryPoint)) {
+               return true
+            } else if (htmlFileConfiguration.injectedOutputs && htmlFileConfiguration.injectedOutputs.includes(key)) {
+                return true
+            }
+            return false
         }).map(outputData => {
             // Flatten the output, instead of returning an array, let's return an object that contains the path of the output file as path
             return { path: outputData[0], ...outputData[1] }

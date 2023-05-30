@@ -88,8 +88,8 @@ const options = {
           `,
                 },
                 {
-                    entryPoints: [
-                        'src/auth/auth.jsx',
+                    injectedOutputs: [
+                        'dist/auth.js',
                     ],
                     filename: 'auth.html',
                     title: 'Login',
@@ -138,8 +138,10 @@ interface Configuration {
 
 interface HtmlFileConfiguration {
     filename: string,           // Output filename, e.g. index.html. This path is relative to the out dir
-    entryPoints: string[],      // Entry points to inject into the created html file, e.g. ['src/index.jsx']. 
-                                // Multiple entryPoints are possible.
+    entryPoints?: string[],     // Entry points to inject into the created html file, e.g. ['src/index.jsx']. 
+                                // Multiple entryPoints are possible. Must supply entryPoints or outputs.
+    injectedOutputs?: string[], // Esbuild outputs to inject into the created html file, e.g. ['dist/auth.js']. 
+                                // Multiple outputs are possible. Must supply entryPoints or outputs.
     title?: string,             // title to inject into the head, will not be set if not specified
     htmlTemplate?: string,      // custom html document template string. If you omit a template, 
                                 // a default template will be used (see below)
