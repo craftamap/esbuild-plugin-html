@@ -1,4 +1,4 @@
-import esbuild from 'esbuild'
+import esbuild from 'esbuild';
 export interface Configuration {
     files: HtmlFileConfiguration[];
 }
@@ -36,4 +36,4 @@ export interface HtmlFileConfiguration {
         };
     })[];
 }
-export declare const htmlPlugin: (configuration?: Configuration) => esbuild.Plugin
+export declare const htmlPlugin: (configuration?: Configuration) => esbuild.Plugin;

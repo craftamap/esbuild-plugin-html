@@ -190,22 +190,22 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
             // Inline the JavaScript and CSS files if the option is set.
             const { inline } = htmlFileConfiguration
 
-            const isInline = (inline_: HtmlFileConfiguration['inline'] | undefined, ext_: '.css' | '.js') => {
-                if (!inline_) {
+            const isInline = () => {
+                if (!inline) {
                     return false
                 }
-                const extension = ext_.replace('.', '') as 'css' | 'js'
+                const extension = ext.replace('.', '') as 'css' | 'js'
                 return (
-                    (typeof inline_ === 'boolean' && inline_ === true) ||
-                    (typeof inline_ === 'object' && inline_[extension] === true)
+                    (typeof inline === 'boolean' && inline === true) ||
+                    (typeof inline === 'object' && inline[extension] === true)
                 )
             }
 
             if (ext === '.js') {
                 const scriptTag = document.createElement('script')
                 // Check if the JavaScript should be inlined.
-                if (isInline(inline, ext)) {
-                    console.log('Inlining script', filepath)
+                if (isInline()) {
+                    logInfo && console.log('Inlining script', filepath)
                     // Read the content of the JavaScript file, then append to the script tag
                     const scriptContent = await fs.promises.readFile(
                         filepath,
@@ -232,7 +232,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                 document.body.append(scriptTag)
             } else if (ext === '.css') {
                 // Check if the CSS should be inlined -> if so, use style tags instead of link tags.
-                if (isInline(inline, ext)) {
+                if (isInline()) {
                     const styleTag = document.createElement('style')
                     const styleContent = await fs.promises.readFile(
                         filepath,
