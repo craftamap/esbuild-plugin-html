@@ -40,7 +40,7 @@ export interface HtmlFileConfiguration {
         src: string,
         attrs?: { [key: string]: string }
     })[],
-    hash: boolean
+    hash?: boolean | string,
 }
 
 const defaultHtmlTemplate = `
@@ -188,7 +188,8 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                 targetPath = path.relative(path.dirname(htmlFileDirectory), filepath)
             }
             if (htmlFileConfiguration.hash) {
-                targetPath = `${targetPath}?${crypto.createHash('md5').update(JSON.stringify(outputFile)).digest("hex")}`;
+                const hashableContents = htmlFileConfiguration.hash === true ? `${Date.now()}` : htmlFileConfiguration.hash
+                targetPath = `${targetPath}?${crypto.createHash('md5').update(hashableContents).digest('hex')}`
             }
             const ext = path.parse(filepath).ext
 
