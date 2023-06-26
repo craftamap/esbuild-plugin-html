@@ -163,7 +163,9 @@ interface HtmlFileConfiguration {
         src: string;            // src to use for the script
         attrs?: { [key: string]: string } // attributes to append to the script, e.g. { type: 'module', async: true }
     })[],
-    hash: boolean               // If true, append a hash to all included scripts and CSS files for cache-busting.
+    hash?: boolean | string,    // Append a hash to all included scripts and CSS files for cache-busting. The
+                                // hash is based on the given string. If given a boolean, the hash is based on
+                                // the current time.
 }
 ```
 
