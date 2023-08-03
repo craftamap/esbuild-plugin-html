@@ -27,7 +27,7 @@ export interface HtmlFileConfiguration {
     /** @param findRelatedCssFiles Whether to find CSS files that are related to the entry points. */
     findRelatedCssFiles?: boolean,
     /**
-     * @deprecated Use findRelatedCssFiles instead. 
+     * @deprecated Use findRelatedCssFiles instead.
      * @param findRelatedOutputFiles Whether to find output files that are related to the entry points. */
     findRelatedOutputFiles?: boolean,
     /** @param inline Whether to inline the content of the js and css files. */
@@ -143,8 +143,13 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
         const template = (htmlTemplate && fs.existsSync(htmlTemplate)
             ? await fs.promises.readFile(htmlTemplate)
             : htmlTemplate || '').toString()
-        const compiledTemplateFn = lodashTemplate(template || defaultHtmlTemplate)
-        return compiledTemplateFn({ define })
+
+        if (define === undefined) {
+            return template
+        } else {
+            const compiledTemplateFn = lodashTemplate(template || defaultHtmlTemplate)
+            return compiledTemplateFn({ define })
+        }
     }
 
     // use the same joinWithPublicPath function as esbuild:
@@ -226,7 +231,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
                 // If not inlined, set the 'src' attribute as usual.
                 scriptTag.setAttribute('src', targetPath)
-                    
+
                 if (htmlFileConfiguration.scriptLoading === 'module') {
                     // If module, add type="module"
                     scriptTag.setAttribute('type', 'module')
@@ -249,7 +254,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
                     // no need to set any attributes
                     continue
-                } 
+                }
 
                 const linkTag = document.createElement('link')
                 linkTag.setAttribute('rel', 'stylesheet')
