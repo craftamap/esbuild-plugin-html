@@ -140,14 +140,16 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
     }
 
     async function renderTemplate({ htmlTemplate, define }: HtmlFileConfiguration) {
-        const template = (htmlTemplate && fs.existsSync(htmlTemplate)
+        const customHtmlTemplate = (htmlTemplate && fs.existsSync(htmlTemplate)
             ? await fs.promises.readFile(htmlTemplate)
             : htmlTemplate || '').toString()
+
+        const template = customHtmlTemplate || defaultHtmlTemplate
 
         if (define === undefined) {
             return template
         } else {
-            const compiledTemplateFn = lodashTemplate(template || defaultHtmlTemplate)
+            const compiledTemplateFn = lodashTemplate(template)
             return compiledTemplateFn({ define })
         }
     }
