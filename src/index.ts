@@ -34,7 +34,7 @@ export interface HtmlFileConfiguration {
     inline?: boolean | {
         css?: boolean
         js?: boolean
-    }
+    } | ((filepath: string) => boolean),
     /** @param extraScripts Extra script tags to include in the HTML file. */
     extraScripts?: (string | {
         src: string,
@@ -203,7 +203,8 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                 const extension = ext.replace('.', '') as 'css' | 'js'
                 return (
                     (typeof inline === 'boolean' && inline === true) ||
-                    (typeof inline === 'object' && inline[extension] === true)
+                    (typeof inline === 'object' && inline[extension] === true) ||
+                    (typeof inline === 'function' && inline(filepath))
                 )
             }
 
@@ -226,7 +227,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
                 // If not inlined, set the 'src' attribute as usual.
                 scriptTag.setAttribute('src', targetPath)
-                    
+
                 if (htmlFileConfiguration.scriptLoading === 'module') {
                     // If module, add type="module"
                     scriptTag.setAttribute('type', 'module')
@@ -249,7 +250,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
                     // no need to set any attributes
                     continue
-                } 
+                }
 
                 const linkTag = document.createElement('link')
                 linkTag.setAttribute('rel', 'stylesheet')
