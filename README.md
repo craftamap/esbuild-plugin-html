@@ -162,7 +162,8 @@ interface HtmlFileConfiguration {
     inline?: boolean | {        // Inline all js and css entry points into the html file.
         js?: boolean,           // Inline all js resources into the html file. 
         css?: boolean,          // Inline all css resources into the html file.
-    }                           // Not set by default - will not inline any resources.
+    } | ((filepath: string) => boolean), // Inline resources by custom function.
+                                // Not set by default - will not inline any resources.
     extraScripts?: (string | {  // accepts an array of src strings or objects with src and attributes
         src: string;            // src to use for the script
         attrs?: { [key: string]: string } // attributes to append to the script, e.g. { type: 'module', async: true }

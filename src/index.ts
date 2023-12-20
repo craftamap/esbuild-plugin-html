@@ -34,7 +34,7 @@ export interface HtmlFileConfiguration {
     inline?: boolean | {
         css?: boolean
         js?: boolean
-    }
+    } | ((filepath: string) => boolean),
     /** @param extraScripts Extra script tags to include in the HTML file. */
     extraScripts?: (string | {
         src: string,
@@ -210,7 +210,8 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                 const extension = ext.replace('.', '') as 'css' | 'js'
                 return (
                     (typeof inline === 'boolean' && inline === true) ||
-                    (typeof inline === 'object' && inline[extension] === true)
+                    (typeof inline === 'object' && inline[extension] === true) ||
+                    (typeof inline === 'function' && inline(filepath))
                 )
             }
 

@@ -27,7 +27,7 @@ export interface HtmlFileConfiguration {
     inline?: boolean | {
         css?: boolean;
         js?: boolean;
-    };
+    } | ((filepath: string) => boolean);
     /** @param extraScripts Extra script tags to include in the HTML file. */
     extraScripts?: (string | {
         src: string;
