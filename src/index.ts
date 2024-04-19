@@ -2,7 +2,7 @@ import crypto from 'crypto'
 import esbuild from 'esbuild'
 import fs from 'fs'
 import path from 'path'
-import { JSDOM } from 'jsdom'
+import * as cheerio from 'cheerio'
 import lodashTemplate from 'lodash.template'
 
 export interface Configuration {
@@ -170,19 +170,17 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
         return `${publicPath}${slash}${relPath}`
     }
 
-    async function injectFiles(dom: JSDOM, assets: { path: string }[], outDir: string, publicPath: string | undefined, htmlFileConfiguration: HtmlFileConfiguration) {
-        const document = dom.window.document
+    async function injectFiles(dom: cheerio.CheerioAPI, assets: { path: string }[], outDir: string, publicPath: string | undefined, htmlFileConfiguration: HtmlFileConfiguration) {
         for (const script of htmlFileConfiguration?.extraScripts || []) {
-            const scriptTag = document.createElement('script')
+            const scriptTag = dom('body').append('<script />')
             if (typeof script === 'string') {
-                scriptTag.setAttribute('src', script)
+                scriptTag.attr('src', script)
             } else {
-                scriptTag.setAttribute('src', script.src)
+                scriptTag.attr('src', script.src)
                 Object.entries(script.attrs || {}).forEach(([key, value]) => {
-                    scriptTag.setAttribute(key, value)
+                    scriptTag.attr(key, value)
                 })
             }
-            document.body.append(scriptTag)
         }
         for (const outputFile of assets) {
             const filepath = outputFile.path
@@ -215,7 +213,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
             }
 
             if (ext === '.js') {
-                const scriptTag = document.createElement('script')
+                const scriptTag = dom('body').append('<script />')
                 // Check if the JavaScript should be inlined.
                 if (isInline()) {
                     logInfo && console.log('Inlining script', filepath)
@@ -224,44 +222,40 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                         filepath,
                         'utf-8'
                     )
-                    scriptTag.textContent = scriptContent
-                    document.body.append(scriptTag)
+                    scriptTag.text(scriptContent)
 
                     // no need to set any attributes
                     continue
                 }
 
                 // If not inlined, set the 'src' attribute as usual.
-                scriptTag.setAttribute('src', targetPath)
+                scriptTag.attr('src', targetPath)
 
                 if (htmlFileConfiguration.scriptLoading === 'module') {
                     // If module, add type="module"
-                    scriptTag.setAttribute('type', 'module')
+                    scriptTag.attr('type', 'module')
                 } else if (!htmlFileConfiguration.scriptLoading || htmlFileConfiguration.scriptLoading === 'defer') {
                     // if scriptLoading is unset, or defer, use defer
-                    scriptTag.setAttribute('defer', '')
+                    scriptTag.attr('defer', '')
                 }
 
-                document.body.append(scriptTag)
             } else if (ext === '.css') {
                 // Check if the CSS should be inlined -> if so, use style tags instead of link tags.
                 if (isInline()) {
-                    const styleTag = document.createElement('style')
+                    const styleTag = dom('head').append('<style />')
                     const styleContent = await fs.promises.readFile(
                         filepath,
                         'utf-8'
                     )
-                    styleTag.textContent = styleContent
-                    document.head.append(styleTag)
+                    styleTag.text(styleContent)
 
                     // no need to set any attributes
                     continue
                 }
 
-                const linkTag = document.createElement('link')
-                linkTag.setAttribute('rel', 'stylesheet')
-                linkTag.setAttribute('href', targetPath)
-                document.head.appendChild(linkTag)
+                const linkTag = dom('head').append('<link />')
+                linkTag.attr('rel', 'stylesheet')
+                linkTag.attr('href', targetPath)
             } else {
                 logInfo && console.log(`Warning: found file ${targetPath}, but it was neither .js nor .css`)
             }
@@ -322,27 +316,27 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                     const templatingResult = await renderTemplate(htmlFileConfiguration)
 
                     // Next, we insert the found files into the htmlTemplate - if no htmlTemplate was specified, we default to a basic one.
-                    const dom = new JSDOM(templatingResult)
-                    const document = dom.window.document
-
+                    const dom = cheerio.load(templatingResult)
+                    
                     if (htmlFileConfiguration.title) {
                         // If a title was given, we pass the title as well
-                        document.title = htmlFileConfiguration.title
+                        dom('head > title').remove()
+                        dom('head').append('title').text(htmlFileConfiguration.title)
                     }
 
                     if (htmlFileConfiguration.favicon) {
                         // Injects a favicon if present
                         await fs.promises.copyFile(htmlFileConfiguration.favicon, `${outdir}/favicon.ico`)
 
-                        const linkTag = document.createElement('link')
-                        linkTag.setAttribute('rel', 'icon')
+                        
+                        const linkTag = dom('head').append('<link />')
+                        linkTag.attr('rel', 'icon')
 
                         let faviconPublicPath = '/favicon.ico'
                         if (publicPath) {
                             faviconPublicPath = joinWithPublicPath(publicPath, 'favicon.ico')
                         }
-                        linkTag.setAttribute('href', faviconPublicPath)
-                        document.head.appendChild(linkTag)
+                        linkTag.attr('href', faviconPublicPath)
                     }
 
                     await injectFiles(dom, collectedOutputFiles, outdir, publicPath, htmlFileConfiguration)
@@ -351,7 +345,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                     await fs.promises.mkdir(path.dirname(out), {
                         recursive: true,
                     })
-                    await fs.promises.writeFile(out, dom.serialize())
+                    await fs.promises.writeFile(out, dom.html())
                     const stat = await fs.promises.stat(out)
                     logInfo && console.log(`  ${out} - ${stat.size}`)
                 }
