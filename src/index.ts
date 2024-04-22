@@ -316,12 +316,12 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                     const templatingResult = await renderTemplate(htmlFileConfiguration)
 
                     // Next, we insert the found files into the htmlTemplate - if no htmlTemplate was specified, we default to a basic one.
-                    const dom = cheerio.load(templatingResult)
+                    const document = cheerio.load(templatingResult)
                     
                     if (htmlFileConfiguration.title) {
                         // If a title was given, we pass the title as well
-                        dom('head > title').remove()
-                        dom('head').append('title').text(htmlFileConfiguration.title)
+                        document('head > title').remove()
+                        document('head').append('title').text(htmlFileConfiguration.title)
                     }
 
                     if (htmlFileConfiguration.favicon) {
@@ -329,7 +329,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                         await fs.promises.copyFile(htmlFileConfiguration.favicon, `${outdir}/favicon.ico`)
 
                         
-                        const linkTag = dom('head').append('<link />')
+                        const linkTag = document('head').append('<link />')
                         linkTag.attr('rel', 'icon')
 
                         let faviconPublicPath = '/favicon.ico'
@@ -339,13 +339,13 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                         linkTag.attr('href', faviconPublicPath)
                     }
 
-                    await injectFiles(dom, collectedOutputFiles, outdir, publicPath, htmlFileConfiguration)
+                    await injectFiles(document, collectedOutputFiles, outdir, publicPath, htmlFileConfiguration)
 
                     const out = posixJoin(outdir, htmlFileConfiguration.filename)
                     await fs.promises.mkdir(path.dirname(out), {
                         recursive: true,
                     })
-                    await fs.promises.writeFile(out, dom.html())
+                    await fs.promises.writeFile(out, document.html())
                     const stat = await fs.promises.stat(out)
                     logInfo && console.log(`  ${out} - ${stat.size}`)
                 }
