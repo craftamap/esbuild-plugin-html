@@ -2,7 +2,7 @@ import crypto from 'crypto'
 import esbuild from 'esbuild'
 import fs from 'fs'
 import path from 'path'
-import * as cheerio from 'cheerio'
+import cheerio, { CheerioAPI} from 'cheerio'
 import lodashTemplate from 'lodash.template'
 
 export interface Configuration {
@@ -170,7 +170,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
         return `${publicPath}${slash}${relPath}`
     }
 
-    async function injectFiles(document: cheerio.CheerioAPI, assets: { path: string }[], outDir: string, publicPath: string | undefined, htmlFileConfiguration: HtmlFileConfiguration) {
+    async function injectFiles(document: CheerioAPI, assets: { path: string }[], outDir: string, publicPath: string | undefined, htmlFileConfiguration: HtmlFileConfiguration) {
         for (const script of htmlFileConfiguration?.extraScripts || []) {
             const scriptTag = document('body').append('<script />')
             if (typeof script === 'string') {
