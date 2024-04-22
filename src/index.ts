@@ -170,9 +170,9 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
         return `${publicPath}${slash}${relPath}`
     }
 
-    async function injectFiles(dom: cheerio.CheerioAPI, assets: { path: string }[], outDir: string, publicPath: string | undefined, htmlFileConfiguration: HtmlFileConfiguration) {
+    async function injectFiles(document: cheerio.CheerioAPI, assets: { path: string }[], outDir: string, publicPath: string | undefined, htmlFileConfiguration: HtmlFileConfiguration) {
         for (const script of htmlFileConfiguration?.extraScripts || []) {
-            const scriptTag = dom('body').append('<script />')
+            const scriptTag = document('body').append('<script />')
             if (typeof script === 'string') {
                 scriptTag.attr('src', script)
             } else {
@@ -213,7 +213,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
             }
 
             if (ext === '.js') {
-                const scriptTag = dom('body').append('<script />')
+                const scriptTag = document('body').append('<script />')
                 // Check if the JavaScript should be inlined.
                 if (isInline()) {
                     logInfo && console.log('Inlining script', filepath)
@@ -242,7 +242,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
             } else if (ext === '.css') {
                 // Check if the CSS should be inlined -> if so, use style tags instead of link tags.
                 if (isInline()) {
-                    const styleTag = dom('head').append('<style />')
+                    const styleTag = document('head').append('<style />')
                     const styleContent = await fs.promises.readFile(
                         filepath,
                         'utf-8'
@@ -253,7 +253,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                     continue
                 }
 
-                const linkTag = dom('head').append('<link />')
+                const linkTag = document('head').append('<link />')
                 linkTag.attr('rel', 'stylesheet')
                 linkTag.attr('href', targetPath)
             } else {
