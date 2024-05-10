@@ -3,7 +3,7 @@ import esbuild from 'esbuild'
 import fs from 'fs'
 import path from 'path'
 import { JSDOM } from 'jsdom'
-import lodashTemplate from 'lodash.template'
+import lodashTemplate from 'lodash/template'
 
 export interface Configuration {
     files: HtmlFileConfiguration[],
