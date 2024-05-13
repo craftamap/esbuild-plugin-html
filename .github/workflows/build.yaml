@@ -4,9 +4,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '21'
       - name: install dependencies
-        run: yarn
+        run: yarn install
       - name: Run build
         run: yarn build
       - name: Detect unwanted changes
@@ -15,8 +18,22 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '21'
       - name: install dependencies
-        run: yarn
+        run: yarn install
       - name: Run lint
         run: yarn lint
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '21'
+      - name: install dependencies
+        run: yarn install
+      - name: Run test
+        run: yarn test
