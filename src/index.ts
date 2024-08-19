@@ -223,13 +223,13 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                   // If module, add type="module"
                   scriptTag.setAttribute("type", "module");
                 } else if (
-                  !htmlFileConfiguration.scriptLoading ||
-                  htmlFileConfiguration.scriptLoading === "defer"
+                  (!htmlFileConfiguration.scriptLoading ||
+                  htmlFileConfiguration.scriptLoading === "defer") && !htmlFileConfiguration.inline
                 ) {
                   // if scriptLoading is unset, or defer, use defer
                   scriptTag.setAttribute("defer", "");
                 }
-                
+
                 // Check if the JavaScript should be inlined.
                 if (isInline()) {
                     logInfo && console.log('Inlining script', filepath)
