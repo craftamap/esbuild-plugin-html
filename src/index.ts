@@ -219,15 +219,14 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
             if (ext === '.js') {
                 const scriptTag = document.createElement('script')
 
-                if (htmlFileConfiguration.scriptLoading === "module") {
-                  // If module, add type="module"
-                  scriptTag.setAttribute("type", "module");
+                if (htmlFileConfiguration.scriptLoading === 'module') {
+                    // If module, add type="module"
+                    scriptTag.setAttribute('type', 'module')
                 } else if (
-                  (!htmlFileConfiguration.scriptLoading ||
-                  htmlFileConfiguration.scriptLoading === "defer") && !htmlFileConfiguration.inline
+                    !htmlFileConfiguration.inline && (!htmlFileConfiguration.scriptLoading || htmlFileConfiguration.scriptLoading === 'defer')
                 ) {
-                  // if scriptLoading is unset, or defer, use defer
-                  scriptTag.setAttribute("defer", "");
+                    // if scriptLoading is unset or defer, use defer
+                    scriptTag.setAttribute('defer', '')
                 }
 
                 // Check if the JavaScript should be inlined.
