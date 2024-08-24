@@ -198,18 +198,7 @@ Contributions are always welcome.
 
 Currently `tsc` is used to build the project.
 
-If you file a commit, please use the following commit pattern:
-
-```
-topic: description (#issueId)
-```
-
-For example:
-
-```
-README: Add banner to README.md (#2)
-```
-
+Commits should be messaged according to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ## Kudos: Other `*.html`-Plugins
 
