@@ -146,12 +146,8 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
         const template = customHtmlTemplate || defaultHtmlTemplate
 
-        if (define === undefined) {
-            return template
-        } else {
-            const compiledTemplateFn = lodashTemplate(template)
-            return compiledTemplateFn({ define })
-        }
+        const compiledTemplateFn = lodashTemplate(template, { interpolate: /<%=([\s\S]+?)%>/g })
+        return compiledTemplateFn({ define })
     }
 
     // use the same joinWithPublicPath function as esbuild:
