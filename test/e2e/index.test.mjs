@@ -1,10 +1,11 @@
 import { describe, it, beforeEach, afterEach } from 'node:test'
-import { htmlPlugin } from '../../lib/cjs/index.js'
 import * as fsPromises from 'fs/promises'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 import * as assert from 'assert'
+import * as esbuild from 'esbuild'
+const { htmlPlugin } = await import('../../lib/cjs/index.js')
 
 describe('esbuild-plugin-html', () => {
     let savedDir
@@ -17,13 +18,13 @@ describe('esbuild-plugin-html', () => {
         process.chdir(savedDir)
     })
 
-    const helper = async (htmlOptions) => {
+    const helper = async (/** @type {import('../../lib/cjs/index').HtmlFileConfiguration } */ htmlOptions) => {
         await fsPromises.mkdir('src/')
         await fsPromises.writeFile('src/index.ts', '')
 
-        // esbuild should default to the current cwd, but during import. using dynamic imports, we can avoid this.
-        const esbuild = await import('esbuild')
         await esbuild.build({
+            // esbuild should default to the current cwd, but during import, so we need to specifcy a working directory here.
+            absWorkingDir: process.cwd(),
             entryPoints: ['src/index.ts'],
             metafile: true,
             outdir: './out',
@@ -34,17 +35,16 @@ describe('esbuild-plugin-html', () => {
                         entryPoints: ['src/index.ts'],
                         ...htmlOptions
                     },
-                ]
+                ],
             })]
         })
 
 
         assert.ok(fs.existsSync('out/index.html'))
         return await fsPromises.readFile('out/index.html', 'utf8')
-
     }
 
-    it('creates a html file for a simple entry file', async () => {
+    it('creates html file with a script tag', async () => {
 
         const result = await helper({})
 
@@ -59,7 +59,22 @@ describe('esbuild-plugin-html', () => {
     })
 
 
-    it('creates a html file for a empty entry file', async () => {
+    it('creates html file containing the js inline', async () => {
+
+        const result = await helper({ inline: true })
+
+        assert.strictEqual(result, `<!DOCTYPE html><html><head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+  
+
+<script></script></body></html>`
+        )
+    })
+
+
+    it('creates a html file for a empty template', async () => {
 
         const result = await helper({
             htmlTemplate: '',
