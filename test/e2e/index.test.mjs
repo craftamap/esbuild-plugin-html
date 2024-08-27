@@ -11,13 +11,13 @@ describe('esbuild-plugin-html', () => {
     beforeEach(async () => {
         savedDir = process.cwd()
         const testDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), 'esbuild-plugin-html_'))
-        console.log(testDir)
         process.chdir(testDir)
     })
     afterEach(() => {
         process.chdir(savedDir)
     })
-    it('creates a html file for a simple entry file', async () => {
+
+    const helper = async (htmlOptions) => {
         await fsPromises.mkdir('src/')
         await fsPromises.writeFile('src/index.ts', '')
 
@@ -27,19 +27,28 @@ describe('esbuild-plugin-html', () => {
             entryPoints: ['src/index.ts'],
             metafile: true,
             outdir: './out',
-            logLevel: 'info',
             plugins: [htmlPlugin({
                 files: [
                     {
                         filename: 'index.html',
                         entryPoints: ['src/index.ts'],
+                        ...htmlOptions
                     },
                 ]
             })]
         })
 
+
         assert.ok(fs.existsSync('out/index.html'))
-        assert.strictEqual(await fsPromises.readFile('out/index.html', 'utf8'), `<!DOCTYPE html><html><head>
+        return await fsPromises.readFile('out/index.html', 'utf8')
+
+    }
+
+    it('creates a html file for a simple entry file', async () => {
+
+        const result = await helper({})
+
+        assert.strictEqual(result, `<!DOCTYPE html><html><head>
     <meta charset="utf-8">
   </head>
   <body>
@@ -47,5 +56,36 @@ describe('esbuild-plugin-html', () => {
 
 <script src="index.js" defer=""></script></body></html>`
         )
+    })
+
+
+    it('creates a html file for a empty entry file', async () => {
+
+        const result = await helper({
+            htmlTemplate: '',
+        })
+
+        assert.strictEqual(result, `<!DOCTYPE html><html><head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+  
+
+<script src="index.js" defer=""></script></body></html>`
+        )
+    })
+
+
+
+    it('quick lodash test', async () => {
+
+        const result = await helper({
+            htmlTemplate: '<%- define.value %>',
+            define: {
+                value: 'hallo',
+            }
+        })
+
+        assert.strictEqual(result, '<html><head></head><body>hallo<script src="index.js" defer=""></script></body></html>')
     })
 })
