@@ -215,16 +215,6 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
             if (ext === '.js') {
                 const scriptTag = document.createElement('script')
 
-                if (htmlFileConfiguration.scriptLoading === 'module') {
-                    // If module, add type="module"
-                    scriptTag.setAttribute('type', 'module')
-                } else if (
-                    !htmlFileConfiguration.inline && (!htmlFileConfiguration.scriptLoading || htmlFileConfiguration.scriptLoading === 'defer')
-                ) {
-                    // if scriptLoading is unset or defer, use defer
-                    scriptTag.setAttribute('defer', '')
-                }
-
                 // Check if the JavaScript should be inlined.
                 if (isInline()) {
                     logInfo && console.log('Inlining script', filepath)
@@ -234,14 +224,20 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                         'utf-8'
                     )
                     scriptTag.textContent = scriptContent
-                    document.body.append(scriptTag)
-
-                    // no need to set any attributes
-                    continue
+                } else {
+                    // If not inlined, set the 'src' attribute as usual.
+                    scriptTag.setAttribute('src', targetPath)
                 }
 
-                // If not inlined, set the 'src' attribute as usual.
-                scriptTag.setAttribute('src', targetPath)
+                if (htmlFileConfiguration.scriptLoading === 'module') {
+                    // If module, add type="module"
+                    scriptTag.setAttribute('type', 'module')
+                } else if (
+                    !isInline() && (!htmlFileConfiguration.scriptLoading || htmlFileConfiguration.scriptLoading === 'defer')
+                ) {
+                    // if scriptLoading is unset or defer, use defer
+                    scriptTag.setAttribute('defer', '')
+                }
 
                 document.body.append(scriptTag)
             } else if (ext === '.css') {
