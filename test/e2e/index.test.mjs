@@ -45,7 +45,6 @@ describe('esbuild-plugin-html', () => {
     }
 
     it('creates html file with a script tag', async () => {
-
         const result = await helper({})
 
         assert.strictEqual(result, `<!DOCTYPE html><html><head>
@@ -59,8 +58,76 @@ describe('esbuild-plugin-html', () => {
     })
 
 
-    it('creates html file containing the js inline', async () => {
+    it('inserts a title into the html file', async () => {
+        const result = await helper({ title: 'Hallo Welt!' })
 
+        assert.strictEqual(result, `<!DOCTYPE html><html><head>
+    <meta charset="utf-8">
+  <title>Hallo Welt!</title></head>
+  <body>
+  
+
+<script src="index.js" defer=""></script></body></html>`
+        )
+    })
+
+    describe('scriptLoading', () => {
+        it('blocking', async () => {
+            const result = await helper({ scriptLoading: 'blocking' })
+
+            assert.strictEqual(result, `<!DOCTYPE html><html><head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+  
+
+<script src="index.js"></script></body></html>`
+            )
+        })
+
+        it('defer', async () => {
+            const result = await helper({ scriptLoading: 'defer' })
+
+            assert.strictEqual(result, `<!DOCTYPE html><html><head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+  
+
+<script src="index.js" defer=""></script></body></html>`
+            )
+        })
+
+        it('module', async () => {
+            const result = await helper({ scriptLoading: 'module' })
+
+            assert.strictEqual(result, `<!DOCTYPE html><html><head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+  
+
+<script src="index.js" type="module"></script></body></html>`
+            )
+        })
+
+
+        it('module, inline', async () => {
+            const result = await helper({ inline: true, scriptLoading: 'module' })
+
+            assert.strictEqual(result, `<!DOCTYPE html><html><head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+  
+
+<script type="module"></script></body></html>`
+            )
+        })
+    })
+
+
+    it('creates html file containing the js inline', async () => {
         const result = await helper({ inline: true })
 
         assert.strictEqual(result, `<!DOCTYPE html><html><head>
@@ -70,6 +137,20 @@ describe('esbuild-plugin-html', () => {
   
 
 <script></script></body></html>`
+        )
+    })
+
+
+    it('extraScripts', async () => {
+        const result = await helper({ extraScripts: [{ src: 'https://example.com/what', attrs: { "type": "module" } }] })
+
+        assert.strictEqual(result, `<!DOCTYPE html><html><head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+  
+
+<script src="https://example.com/what" type="module"></script><script src="index.js" defer=""></script></body></html>`
         )
     })
 
@@ -92,7 +173,7 @@ describe('esbuild-plugin-html', () => {
 
 
 
-    it('quick lodash test', async () => {
+    it('lodash / define', async () => {
 
         const result = await helper({
             htmlTemplate: '<%- define.value %>',
