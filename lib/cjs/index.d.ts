@@ -1,4 +1,4 @@
-import esbuild from 'esbuild';
+import esbuild from "esbuild";
 export interface Configuration {
     files: HtmlFileConfiguration[];
 }
@@ -14,7 +14,7 @@ export interface HtmlFileConfiguration {
     /** @param define A map of variables that will be available in the HTML file. */
     define?: Record<string, string>;
     /** @param scriptLoading How to load the generated script tags: blocking, defer, or module. Defaults to defer. */
-    scriptLoading?: 'blocking' | 'defer' | 'module';
+    scriptLoading?: "blocking" | "defer" | "module";
     /** @param favicon A path to a favicon to use. */
     favicon?: string;
     /** @param findRelatedCssFiles Whether to find CSS files that are related to the entry points. */
