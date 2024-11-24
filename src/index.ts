@@ -286,6 +286,9 @@ export const htmlPlugin = (
           // Read the content of the JavaScript file, then append to the script tag
           const scriptContent = await fs.promises.readFile(filepath, "utf-8");
           scriptTag.textContent = scriptContent;
+
+          // cleanup the source file if inline
+          await cleanSourceFileAsync(filepath);
         } else {
           // If not inlined, set the 'src' attribute as usual.
           scriptTag.setAttribute("src", targetPath);
@@ -309,9 +312,13 @@ export const htmlPlugin = (
         if (isInline()) {
           const styleTag = document.createElement("style");
           const styleContent = await fs.promises.readFile(filepath, "utf-8");
+
           styleTag.textContent = styleContent;
           document.head.append(styleTag);
 
+          // cleanup the source file if inline
+
+          await cleanSourceFileAsync(filepath);
           // no need to set any attributes
           continue;
         }
@@ -442,6 +449,7 @@ export const htmlPlugin = (
           );
 
           const out = posixJoin(outdir, htmlFileConfiguration.filename);
+
           await fs.promises.mkdir(path.dirname(out), {
             recursive: true,
           });
@@ -459,4 +467,8 @@ export const htmlPlugin = (
       });
     },
   };
+
+  async function cleanSourceFileAsync(filepath: string) {
+    await fs.promises.rm(path.resolve(filepath));
+  }
 };

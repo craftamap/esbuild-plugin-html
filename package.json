@@ -1,6 +1,6 @@
 {
   "name": "@craftamap/esbuild-plugin-html",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "main": "./lib/cjs/index.js",
   "repository": {
     "type": "git",
@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint --config eslint.config.mjs 'src/*'",
-    "test": "node --test \"**/*.test.mjs\"",
+    "test": "npm run build && node --test \"**/*.test.mjs\"",
     "tag": "git tag v$(node -p \"require('./package.json').version\") && git push --tags"
   },
   "author": "Fabian Siegel <fabians1999@gmail.com>",
