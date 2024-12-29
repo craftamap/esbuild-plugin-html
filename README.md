@@ -46,7 +46,8 @@ data into the template.
 esbuild script:
 
 - `outdir` must be set. The html files are generated within the `outdir`.
-- `metafile` must be set to `true`.
+- `metafile` must be set to `true` (the plugin does this automatically, if it's
+  not set to `false` on purpose).
 
 ⚠️: you can set a specific output name for resources using esbuild's
 `entryNames` feature. While this plugin tries to support this as best as it

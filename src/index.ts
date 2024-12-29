@@ -269,9 +269,11 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
         name: 'esbuild-html-plugin',
         setup(build) {
             build.onStart(() => {
-                if (!build.initialOptions.metafile) {
-                    throw new Error('metafile is not enabled')
+                if (build.initialOptions.metafile === false) {
+                    throw new Error('metafile is explictly disabled. @craftamap/esbuild-html-plugin needs this to be enabled.')
                 }
+                // we need the metafile. If it's not set, we can set it to `true`
+                build.initialOptions.metafile = true
                 if (!build.initialOptions.outdir) {
                     throw new Error('outdir must be set')
                 }
