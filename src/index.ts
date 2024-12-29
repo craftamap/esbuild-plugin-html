@@ -217,7 +217,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
 
                 // Check if the JavaScript should be inlined.
                 if (isInline()) {
-                    logInfo && console.log('Inlining script', filepath)
+                    if (logInfo) { console.log('Inlining script', filepath) }
                     // Read the content of the JavaScript file, then append to the script tag
                     const scriptContent = await fs.promises.readFile(
                         filepath,
@@ -260,7 +260,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                 linkTag.setAttribute('href', targetPath)
                 document.head.appendChild(linkTag)
             } else {
-                logInfo && console.log(`Warning: found file ${targetPath}, but it was neither .js nor .css`)
+                if (logInfo) { console.log(`Warning: found file ${targetPath}, but it was neither .js nor .css`) }
             }
         }
     }
@@ -281,7 +281,7 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                 if (build.initialOptions.logLevel == 'debug' || build.initialOptions.logLevel == 'info') {
                     logInfo = true
                 }
-                logInfo && console.log()
+                if (logInfo) { console.log() }
 
 
                 for (const htmlFileConfiguration of configuration.files) {
@@ -311,7 +311,6 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                         collectedOutputFiles = [...collectedOutputFiles, ...relatedOutputFiles.values()]
                     }
                     // Note: we can safely disable this rule here, as we already asserted this in setup.onStart
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     const outdir = build.initialOptions.outdir!
 
                     const publicPath = build.initialOptions.publicPath
@@ -350,9 +349,9 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
                     })
                     await fs.promises.writeFile(out, dom.serialize())
                     const stat = await fs.promises.stat(out)
-                    logInfo && console.log(`  ${out} - ${stat.size}`)
+                    if (logInfo) { console.log(`  ${out} - ${stat.size}`) }
                 }
-                logInfo && console.log(`  HTML Plugin Done in ${Date.now() - startTime}ms`)
+                if (logInfo) { console.log(`  HTML Plugin Done in ${Date.now() - startTime}ms`) }
             })
         }
     }
