@@ -1,10 +1,10 @@
 {
-  "extends": "@tsconfig/node12/tsconfig.json",
+  "extends": "@tsconfig/node18/tsconfig.json",
   "compilerOptions": {
     "preserveConstEnums": true,
     "outDir": "lib/cjs",
     "declaration": true,
-    "module": "CommonJS"
+    "module": "node16"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"]
