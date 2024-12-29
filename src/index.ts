@@ -94,6 +94,14 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
             // Flatten the output, instead of returning an array, let's return an object that contains the path of the output file as path
             return { path: outputData[0], ...outputData[1] }
         })
+        if (entryPoints.length < htmlFileConfiguration.entryPoints.length) {
+            for (const htmlFileEntry of htmlFileConfiguration.entryPoints) {
+                if (!entryPoints.some(ep => ep.entryPoint === htmlFileEntry)) {
+                    console.log('⚠️ for "%s", entrypoint "%s" was requested, but not found.', htmlFileConfiguration.filename, htmlFileEntry)
+                }
+            }
+        }
+
         return entryPoints
     }
 

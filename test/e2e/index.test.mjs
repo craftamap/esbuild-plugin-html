@@ -1,4 +1,4 @@
-import { describe, it, beforeEach, afterEach } from 'node:test'
+import { describe, it, beforeEach, afterEach, mock } from 'node:test'
 import * as fsPromises from 'fs/promises'
 import * as fs from 'fs'
 import * as os from 'os'
@@ -184,6 +184,25 @@ describe('esbuild-plugin-html', () => {
         })
 
         assert.strictEqual(result, '<html><head></head><body>hallo<script src="index.js" defer=""></script></body></html>')
+    })
+
+
+    it('extra entrypoint', async () => {
+
+        const m = mock.method(console, 'log', () => { })
+        const result = await helper({
+            entryPoints: ['src/index.ts', 'src/non-existent.ts'],
+        })
+        m.mock.restore()
+        assert.ok(m.mock.calls.some((call) => call.arguments[0].includes('was requested, but not found')))
+
+        assert.strictEqual(result, `<!DOCTYPE html><html><head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+  
+
+<script src="index.js" defer=""></script></body></html>`)
     })
 
     describe('various esbuild option combinations', () => {
