@@ -82,6 +82,9 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
     let logInfo = false
 
     function collectEntrypoints(htmlFileConfiguration: HtmlFileConfiguration, metafile?: esbuild.Metafile) {
+        if (!metafile) {
+            throw new Error('metafile is missing!')
+        }
         const entryPoints = Object.entries(metafile?.outputs || {}).filter(([, value]) => {
             if (!value.entryPoint) {
                 return false
@@ -268,16 +271,15 @@ export const htmlPlugin = (configuration: Configuration = { files: [], }): esbui
     return {
         name: 'esbuild-html-plugin',
         setup(build) {
-            build.onStart(() => {
-                if (build.initialOptions.metafile === false) {
-                    throw new Error('metafile is explictly disabled. @craftamap/esbuild-html-plugin needs this to be enabled.')
-                }
-                // we need the metafile. If it's not set, we can set it to `true`
-                build.initialOptions.metafile = true
-                if (!build.initialOptions.outdir) {
-                    throw new Error('outdir must be set')
-                }
-            })
+            if (build.initialOptions.metafile === false) {
+                throw new Error('metafile is explictly disabled. @craftamap/esbuild-html-plugin needs this to be enabled.')
+            }
+            // we need the metafile. If it's not set, we can set it to `true`
+            build.initialOptions.metafile = true
+            if (!build.initialOptions.outdir) {
+                throw new Error('outdir must be set')
+            }
+
             build.onEnd(async result => {
                 const startTime = Date.now()
                 if (build.initialOptions.logLevel == 'debug' || build.initialOptions.logLevel == 'info') {

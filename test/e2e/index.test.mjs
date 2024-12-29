@@ -193,9 +193,10 @@ describe('esbuild-plugin-html', () => {
             })
         });
         it('works with metafile: undefined', async () => {
-            await helper({}, {
+            const result = await helper({}, {
                 metafile: undefined,
             })
+            result.includes("out/index.js")
         });
         it('throws with metafile: false', async () => {
             await assert.rejects(async () => {
