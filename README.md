@@ -14,12 +14,11 @@ Is any feature missing?
 
 ## Requirements
 
-This plugin requires at least `esbuild` v0.12.26. Development was done on
-node.js 16, node.js 14 should also work though.
+This plugin requires at least `esbuild` v0.12.26. The minimum node version
+supported is Node.js 18. 
 
-There is currently no deno version of this plugin - however, if there is need
-for it, I will add one - 
-[just open a issue.](https://github.com/craftamap/esbuild-plugin-html/issues/new)
+Deno is officially not supported - however, it has been reported that the plugin
+does work with Deno.
 
 ## Installation
 

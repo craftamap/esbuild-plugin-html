@@ -33,7 +33,7 @@
     "typescript-eslint": "^8.18.2"
   },
   "engines": {
-    "node": ">13"
+    "node": ">=18"
   },
   "dependencies": {
     "jsdom": "^25.0.1",
