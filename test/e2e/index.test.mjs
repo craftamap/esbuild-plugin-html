@@ -18,7 +18,7 @@ describe('esbuild-plugin-html', () => {
         process.chdir(savedDir)
     })
 
-    const helper = async (/** @type {import('../../lib/cjs/index').HtmlFileConfiguration } */ htmlOptions) => {
+    const helper = async (/** @type {import('../../lib/cjs/index').HtmlFileConfiguration } */ htmlOptions, /** @type{import('esbuild').BuildOptions} */ esbuildOptions = {}) => {
         await fsPromises.mkdir('src/')
         await fsPromises.writeFile('src/index.ts', '')
 
@@ -36,7 +36,8 @@ describe('esbuild-plugin-html', () => {
                         ...htmlOptions
                     },
                 ],
-            })]
+            })],
+            ...esbuildOptions
         })
 
 
@@ -183,5 +184,32 @@ describe('esbuild-plugin-html', () => {
         })
 
         assert.strictEqual(result, '<html><head></head><body>hallo<script src="index.js" defer=""></script></body></html>')
+    })
+
+    describe('various esbuild option combinations', () => {
+        it('works with metafile: true', async () => {
+            await helper({}, {
+                metafile: true
+            })
+        });
+        it('works with metafile: undefined', async () => {
+            await helper({}, {
+                metafile: undefined,
+            })
+        });
+        it('throws with metafile: false', async () => {
+            await assert.rejects(async () => {
+                await helper({}, {
+                    metafile: false
+                });
+            }, /metafile is explictly disabled/)
+        });
+        it('throws with outdir: undefined', async () => {
+            await assert.rejects(async () => {
+                await helper({}, {
+                    outdir: undefined,
+                });
+            }, /outdir must be set/)
+        });
     })
 })
