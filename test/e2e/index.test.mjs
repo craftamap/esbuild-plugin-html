@@ -19,7 +19,7 @@ describe('esbuild-plugin-html', () => {
     })
 
     const helper = async (/** @type {import('../../lib/cjs/index').HtmlFileConfiguration } */ htmlOptions, /** @type{import('esbuild').BuildOptions} */ esbuildOptions = {}) => {
-        await fsPromises.mkdir('src/')
+        await fsPromises.mkdir('src/', { recursive: true })
         await fsPromises.writeFile('src/index.ts', '')
 
         await esbuild.build({
@@ -203,6 +203,62 @@ describe('esbuild-plugin-html', () => {
   
 
 <script src="index.js" defer=""></script></body></html>`)
+    })
+
+    describe('favicon', () => {
+
+        it('favicon', async () => {
+            await fsPromises.mkdir('src/')
+            await fsPromises.writeFile('src/foo.ico', '')
+            const result = await helper({
+                entryPoints: ['src/index.ts', 'src/non-existent.ts'],
+                favicon: 'src/foo.ico',
+            })
+
+            assert.strictEqual(result, `<!DOCTYPE html><html><head>
+    <meta charset="utf-8">
+  <link rel="icon" href="/favicon.ico"></head>
+  <body>
+  
+
+<script src="index.js" defer=""></script></body></html>`)
+        })
+
+
+        it('favicon png', async () => {
+            await fsPromises.mkdir('src/')
+            await fsPromises.writeFile('src/bar.png', '')
+            const result = await helper({
+                entryPoints: ['src/index.ts', 'src/non-existent.ts'],
+                favicon: 'src/bar.png',
+            })
+
+            assert.strictEqual(result, `<!DOCTYPE html><html><head>
+    <meta charset="utf-8">
+  <link rel="icon" href="/favicon.png"></head>
+  <body>
+  
+
+<script src="index.js" defer=""></script></body></html>`)
+        })
+
+
+        it('favicon no extension', async () => {
+            await fsPromises.mkdir('src/')
+            await fsPromises.writeFile('src/baz', '')
+            const result = await helper({
+                entryPoints: ['src/index.ts', 'src/non-existent.ts'],
+                favicon: 'src/baz',
+            })
+
+            assert.strictEqual(result, `<!DOCTYPE html><html><head>
+    <meta charset="utf-8">
+  <link rel="icon" href="/favicon"></head>
+  <body>
+  
+
+<script src="index.js" defer=""></script></body></html>`)
+        })
     })
 
     describe('various esbuild option combinations', () => {
